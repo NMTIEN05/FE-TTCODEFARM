@@ -1,61 +1,25 @@
-import { Layout, Menu } from "antd";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import "antd/dist/reset.css";
-
-const { Header, Content, Footer } = Layout;
+import React, { useEffect } from 'react';
+import axios from 'axios';
+import { useRoutes } from 'react-router-dom';
+import Register from './pages/auth/Register';
+import Login from './pages/auth/Login';
 
 function App() {
-  const [message, setMessage] = useState("");
-
+ 
   useEffect(() => {
     axios
-      .get("http://localhost:8888/api/message", {
-        withCredentials: true, 
+      .get("http://localhost:8888/api/ping")  // Kiểm tra URL có chính xác không
+      .then(response => {
+        console.log(response.data.message);  // In ra thông báo từ backend
       })
-      .then((res) => {
-        setMessage(res.data.message);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi gọi API:", err);
+      .catch(error => {
+        console.error("Lỗi khi gọi API:", error);  // Hiển thị lỗi khi gọi API
       });
   }, []);
-
-  return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Header>
-        <div className="logo" />
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          defaultSelectedKeys={["home"]}
-          items={[
-            { key: "home", label: <Link to="/">Home</Link> },
-            { key: "about", label: <Link to="/about">About</Link> },
-            { key: "contact", label: <Link to="/contact">Contact</Link> },
-          ]}
-        />
-      </Header>
-
-      <Content style={{ padding: "20px" }}>
-        <div
-          style={{
-            background: "#fff",
-            padding: 24,
-            minHeight: 360,
-          }}
-        >
-          <h2>Thông điệp từ Backend:</h2>
-          <p>{message || "Đang tải..."}</p>
-        </div>
-      </Content>
-
-      <Footer style={{ textAlign: "center" }}>
-        ©2025 Created by You
-      </Footer>
-    </Layout>
-  );
+const routes = useRoutes([
+  {path: '/register', element:<Register/>},
+  {path: '/login', element:<Login/>},
+])
+  return routes;
 }
-
 export default App;

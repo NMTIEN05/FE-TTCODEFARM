@@ -3,27 +3,10 @@ import '../../css/auth.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import { useRegisterForm } from '../../hooks/auth/useRegister';
 
 const Register = () => {
-  const nav = useNavigate();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-
-  const onSubmit = async (data: any) => {
-    console.log(data);
-    
-    try {
-      await axios.post("http://localhost:8888/auth/register", data);
-      alert("Đăng ký thành công");
-      nav("/auth/login");
-    } catch (error) {
-      console.log(error);
-      alert("Đăng ký thất bại");
-    }
-  };
+  const { register, handleSubmit, errors, onSubmit } = useRegisterForm();
 
   return (
     <div className="container">

@@ -29,8 +29,7 @@ const Header = (props: Props) => {
       <ul className="flex space-x-6 text-gray-700 font-medium">
         <li><a href="/" className="hover:text-blue-600">Trang chủ</a></li>
         <li><a href="/allproduct" className="hover:text-blue-600">Sản phẩm</a></li>
-        <li><a href="#" className="hover:text-blue-600">Về chúng tôi</a></li>
-        <li><a href="#" className="hover:text-blue-600">Liên hệ</a></li>
+        <li><a href="/contant" className="hover:text-blue-600">Liên hệ</a></li>
       </ul>
     </nav>
 

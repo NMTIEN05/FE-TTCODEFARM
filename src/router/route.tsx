@@ -10,6 +10,7 @@ import Register from "../pages/auth/Register";
 import DetelProduct from "../pages/detel/DetelProduct";
 import Cart from "../pages/Cart/Cart";
 import Allproduct from "../pages/ProductAll/Allproduct";
+import ContactPage from "../pages/Contant/LienHe";
  // <- import bảo vệ route
 
 export const router = createBrowserRouter([
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
         path: "/allproduct",
         element: <Allproduct />,
       },
+       {
+    path: "/contant",
+    element: <ContactPage />,
+  },
 
     ],
   },
@@ -45,6 +50,7 @@ export const router = createBrowserRouter([
     path: "/auth/login",
     element: <Login />,
   },
+ 
   {
     path: "/admin",
     element: (

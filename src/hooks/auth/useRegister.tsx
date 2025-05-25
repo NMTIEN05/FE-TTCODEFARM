@@ -1,27 +1,41 @@
-// src/hooks/useRegisterForm.ts
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { toast } from 'react-toastify';
 import { RegisterFormData } from '../../types/auth';
 
 export const useRegisterForm = () => {
-  const nav = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>();
+  const navigate = useNavigate();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: RegisterFormData) => {
     try {
-      await axios.post("http://localhost:8888/auth/register", data);
-      alert("Đăng ký thành công");
-      nav("/login");
-    } catch (error) {
-      console.log(error);
-      
+      const res = await axios.post('http://localhost:8888/auth/register', data);
+      toast.success('Đăng ký thành công!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
-      alert("Đăng ký thất bại");
+      // Đợi toast tắt mới chuyển hướng
+      setTimeout(() => {
+        navigate('/auth/login');
+      }, 3000);
+
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || error.message || 'Đăng ký thất bại';
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: 3000,
+      });
     }
   };
 
@@ -29,6 +43,6 @@ export const useRegisterForm = () => {
     register,
     handleSubmit,
     errors,
-    onSubmit
+    onSubmit,
   };
 };

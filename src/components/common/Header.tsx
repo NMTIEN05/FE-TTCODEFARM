@@ -1,9 +1,19 @@
 import { SearchOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons'
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 
 type Props = {}
 
+
 const Header = (props: Props) => {
+   const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate('/auth/login');
+  };
+    const handleCart = () => {
+    navigate('/cart');
+  };
   return (
    <header className="bg-white shadow">
   <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -42,12 +52,12 @@ const Header = (props: Props) => {
     <div className="flex items-center space-x-4 ">
       
   
-<button className=  "text-gray-700 hover:text-blue-600 " title="Tài khoản">
+<button  onClick={handleClick} className=  "text-gray-700 hover:text-blue-600 " title="Tài khoản">
   <UserOutlined className="text-xl mr-5" />
 </button>
 
 
-<button className="relative text-gray-700 hover:text-blue-600" title="Giỏ hàng">
+<button onClick={handleCart} className="relative text-gray-700 hover:text-blue-600" title="Giỏ hàng">
       <ShoppingCartOutlined className="text-2xl" />
       
       {/* Badge */}

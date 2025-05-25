@@ -4,7 +4,7 @@ type Props = {}
 
 const Nav = (props: Props) => {
   return (
-<nav className="container">
+
   <div className="ml-40 mr-40 mt-10 grid grid-cols-1 lg:grid-cols-7 gap-6">
     {/* Left Category Menu - Modern Card Design */}
     <div className="lg:col-span-2">
@@ -144,15 +144,15 @@ const Nav = (props: Props) => {
     </div>
 
     {/* Right Banner */}
-    <div className="lg:col-span-5">
-      <img 
-        src="https://thietkelogo.edu.vn/uploads/images/thiet-ke-do-hoa-khac/banner-sach/3.jpg" 
-        alt="Banner" 
-        className="w-full h-full object-cover rounded-2xl shadow-2xl shadow-gray-200/50"
-      />
-    </div>
+  <div className="lg:col-span-5 h-full">
+  <img
+    src="https://static.vecteezy.com/system/resources/previews/002/294/871/large_2x/reading-book-web-banner-design-open-book-with-stack-of-books-header-or-footer-banner-illustration-free-vector.jpg"
+    alt="Banner"
+    className="w-full h-full object-cover rounded-2xl shadow-2xl shadow-gray-200/50"
+  />
+</div>
   </div>
-</nav>
+
   )
 }
 

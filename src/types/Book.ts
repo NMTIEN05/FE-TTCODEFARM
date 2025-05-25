@@ -7,5 +7,6 @@ export interface Ibook {
   author_id: { _id: string; name: string };
   publisher: string;
   publish_year: string;
+  description: string;
   stock_quantity: number;
 }

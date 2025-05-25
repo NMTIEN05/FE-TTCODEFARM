@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
         index: true,
       },
       {
-        path: "/detel",
+        path: "/detail/:id",
         element: <DetelProduct />,
       },
        {

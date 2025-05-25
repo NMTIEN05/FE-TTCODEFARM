@@ -55,24 +55,7 @@ useEffect(() => {
                   </a>
                 </li>
               ))}
-              <li>
-                <a
-                  href="#"
-                  className="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-95"
-                >
-                  <span className="text-gray-700 group-hover:text-gray-900 font-medium transition-colors duration-300">
-                    Điện thoại & Máy tính bảng
-                  </span>
-                  <svg
-                    className="ml-auto w-4 h-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              </li>
+              
 
             
             </ul>

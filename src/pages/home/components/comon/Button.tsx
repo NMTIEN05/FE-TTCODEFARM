@@ -9,7 +9,7 @@ const ViewAllButton = (props: Props) => {
     <div className="flex justify-center items-center mt-5 ">
       <Button
         type="primary"
-        className="rounded-full px-6 py-2 text-lg font-semibold shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center gap-2"
+        className="mb-15 rounded-full px-6 py-2 text-lg font-semibold shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center gap-2"
         style={{ backgroundColor: "#f97316", borderColor: "#ea580c" }} // màu cam Tailwind orange-500
       > 
         Xem tất cả

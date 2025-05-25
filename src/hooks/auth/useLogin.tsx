@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { RegisterFormData } from '../../types/auth';
 
 export const useLoginForm = () => {
@@ -15,37 +15,34 @@ export const useLoginForm = () => {
   const onSubmit = async (data: any) => {
     try {
       const res = await axios.post('http://localhost:8888/auth/login', data);
-                  toast.success("Đăng nhập thành công!", {
-      position: "top-right",
- // hiện bên phải trên cùng
-      autoClose: 3000,  // tự tắt sau 3s
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-        const result = res.data;
 
+      toast.success("Đăng nhập thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
 
-        
+      const result = res.data;
 
-        // Lưu token và role
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('role', result.role);
+      // Lưu token và isAdmin vào localStorage
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('isAdmin', JSON.stringify(result.isAdmin)); // lưu dưới dạng string
 
-        // Điều hướng theo vai trò
-        if (result.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/');
-        }
-      } catch (error: any) {
-        const message =
-          error.response?.data?.message || error.message || 'Đăng nhập thất bại';
-        alert(message);
+      // Điều hướng theo isAdmin
+      if (result.isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
       }
-
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || error.message || 'Đăng nhập thất bại';
+      alert(message);
+    }
   };
 
   return {

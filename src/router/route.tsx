@@ -11,6 +11,7 @@ import DetelProduct from "../pages/detel/DetelProduct";
 import Cart from "../pages/Cart/Cart";
 import Allproduct from "../pages/ProductAll/Allproduct";
 import ContactPage from "../pages/Contant/LienHe";
+import ProductByCategory from "../pages/home/components/ProductByCategory";
  // <- import bảo vệ route
 
 export const router = createBrowserRouter([
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
        {
     path: "/contant",
     element: <ContactPage />,
+  },
+     {
+    path: "/category/:categoryId",
+    element: <ProductByCategory />,
   },
 
     ],

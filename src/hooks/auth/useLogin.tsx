@@ -1,26 +1,58 @@
-// src/hooks/useRegisterForm.ts
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { RegisterFormData } from '../../types/auth';
+import { toast } from 'react-toastify';
+import { LoginFormData } from '../../types/auth';
+import axiosInstance from '../../utils/axiosInstant';
 
 export const useLoginForm = () => {
-  const nav = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormData>();
+  } = useForm<LoginFormData>();
+  const navigate = useNavigate();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      const res = await axios.post("http://localhost:8888/auth/login", data);
-      alert("Đăng Nhập thành công");
-      localStorage.setItem('token', res.data.token);
-      nav("/auth/login");
-    } catch (error) {
-      console.log(error);
-      alert("Đăng Nhập thất bại");
+      const res = await axiosInstance.post('/auth/login', data);
+
+      const result = res.data;
+
+      if (result.token) {
+        // Lưu thông tin user vào localStorage
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify({
+          id: result._id,
+          email: result.email,
+          fullname: result.fullname,
+          isAdmin: result.isAdmin
+        }));
+
+        toast.success("Đăng nhập thành công!", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+
+        // Điều hướng theo isAdmin
+        setTimeout(() => {
+          if (result.isAdmin) {
+            window.location.href = `http://localhost:5173/?token=${result.token}&user=${encodeURIComponent(JSON.stringify({
+              id: result._id,
+              email: result.email,
+              fullname: result.fullname,
+              isAdmin: result.isAdmin
+            }))}`;
+          } else {
+            navigate('/');
+          }
+        }, 1000);
+      }
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Email hoặc mật khẩu không đúng';
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -28,6 +60,6 @@ export const useLoginForm = () => {
     register,
     handleSubmit,
     errors,
-    onSubmit
+    onSubmit,
   };
 };

@@ -1,48 +1,58 @@
-import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { RegisterFormData } from '../../types/auth';
+import { LoginFormData } from '../../types/auth';
+import axiosInstance from '../../utils/axiosInstant';
 
 export const useLoginForm = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormData>();
+  } = useForm<LoginFormData>();
   const navigate = useNavigate();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      const res = await axios.post('http://localhost:8888/auth/login', data);
-
-      toast.success("Đăng nhập thành công!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      const res = await axiosInstance.post('/auth/login', data);
 
       const result = res.data;
 
-      // Lưu token và isAdmin vào localStorage
-      localStorage.setItem('token', result.token);
-      localStorage.setItem('isAdmin', JSON.stringify(result.isAdmin)); // lưu dưới dạng string
+      if (result.token) {
+        // Lưu thông tin user vào localStorage
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify({
+          id: result._id,
+          email: result.email,
+          fullname: result.fullname,
+          isAdmin: result.isAdmin
+        }));
 
-      // Điều hướng theo isAdmin
-      if (result.isAdmin) {
-        window.location.href=('http://localhost:5174/');
+        toast.success("Đăng nhập thành công!", {
+          position: "top-right",
+          autoClose: 2000,
+        });
 
-      } else {
-        navigate('/');
+        // Điều hướng theo isAdmin
+        setTimeout(() => {
+          if (result.isAdmin) {
+            window.location.href = `http://localhost:5173/?token=${result.token}&user=${encodeURIComponent(JSON.stringify({
+              id: result._id,
+              email: result.email,
+              fullname: result.fullname,
+              isAdmin: result.isAdmin
+            }))}`;
+          } else {
+            navigate('/');
+          }
+        }, 1000);
       }
     } catch (error: any) {
-      const message =
-        error.response?.data?.message || error.message || 'Đăng nhập thất bại';
-      alert(message);
+      const message = error.response?.data?.message || 'Email hoặc mật khẩu không đúng';
+      toast.error(message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 

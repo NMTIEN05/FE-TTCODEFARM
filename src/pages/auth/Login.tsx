@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLoginForm } from '../../hooks/auth/useLogin';
 
@@ -38,12 +37,18 @@ const Login = () => {
                 id="email"
                 type="email"
                 placeholder="Nhập email của bạn"
-                {...register('email', { required: true })}
+                {...register('email', { 
+                  required: 'Email không được để trống',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Email không hợp lệ'
+                  }
+                })}
                 className={`w-full p-4 border rounded-lg text-base transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.email && <p className="text-red-600 mt-1 text-sm">Email không được để trống</p>}
+              {errors.email && <p className="text-red-600 mt-1 text-sm">{errors.email.message}</p>}
             </div>
 
             <div>
@@ -52,12 +57,18 @@ const Login = () => {
                 id="password"
                 type="password"
                 placeholder="Nhập mật khẩu"
-                {...register('password', { required: true })}
+                {...register('password', { 
+                  required: 'Mật khẩu không được để trống',
+                  minLength: {
+                    value: 6,
+                    message: 'Mật khẩu phải có ít nhất 6 ký tự'
+                  }
+                })}
                 className={`w-full p-4 border rounded-lg text-base transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600 ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.password && <p className="text-red-600 mt-1 text-sm">Mật khẩu không được để trống</p>}
+              {errors.password && <p className="text-red-600 mt-1 text-sm">{errors.password.message}</p>}
             </div>
 
             <button

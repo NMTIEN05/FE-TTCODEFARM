@@ -1,14 +1,17 @@
-import { ShoppingCartOutlined, UserOutlined, HeartOutlined } from '@ant-design/icons'
+import { ShoppingCartOutlined, UserOutlined, HeartOutlined, LogoutOutlined } from '@ant-design/icons'
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { SearchBar } from './SearchBar';
 import { WishlistBadge } from './WishlistBadge';
+import { useLogout } from '../../hooks/auth/useLogout';
 
 type Props = {}
 
 
 const Header = (props: Props) => {
   const navigate = useNavigate();
+  const { logout } = useLogout();
+  const isLoggedIn = !!localStorage.getItem('token');
 
   const handleClick = () => {
     navigate('/auth/login');
@@ -46,9 +49,15 @@ const Header = (props: Props) => {
     <div className="flex items-center space-x-4 ">
       
   
-<button  onClick={handleClick} className=  "text-gray-700 hover:text-blue-600 " title="Tài khoản">
-  <UserOutlined className="text-xl mr-5" />
-</button>
+{!isLoggedIn ? (
+  <button onClick={handleClick} className="text-gray-700 hover:text-blue-600" title="Đăng nhập">
+    <UserOutlined className="text-xl mr-5" />
+  </button>
+) : (
+  <button onClick={logout} className="text-gray-700 hover:text-red-600" title="Đăng xuất">
+    <LogoutOutlined className="text-xl mr-5" />
+  </button>
+)}
 
 <button onClick={handleWishlist} className="relative text-gray-700 hover:text-red-600 mr-5" title="Yêu thích">
   <HeartOutlined className="text-xl" />

@@ -14,38 +14,30 @@ export const useLoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const res = await axiosInstance.post('/auth/login', data);
+      const res = await axios.post('http://localhost:8888/auth/login', data);
+
+      toast.success("Đăng nhập thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
 
       const result = res.data;
 
-      if (result.token) {
-        // Lưu thông tin user vào localStorage
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('user', JSON.stringify({
-          id: result._id,
-          email: result.email,
-          fullname: result.fullname,
-          isAdmin: result.isAdmin
-        }));
+      // Lưu token và isAdmin vào localStorage
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('isAdmin', JSON.stringify(result.isAdmin)); // lưu dưới dạng string
 
-        toast.success("Đăng nhập thành công!", {
-          position: "top-right",
-          autoClose: 2000,
-        });
+      // Điều hướng theo isAdmin
+      if (result.isAdmin) {
+        window.location.href=('http://localhost:5174/dashboard');
 
-        // Điều hướng theo isAdmin
-        setTimeout(() => {
-          if (result.isAdmin) {
-            window.location.href = `http://localhost:5173/?token=${result.token}&user=${encodeURIComponent(JSON.stringify({
-              id: result._id,
-              email: result.email,
-              fullname: result.fullname,
-              isAdmin: result.isAdmin
-            }))}`;
-          } else {
-            navigate('/');
-          }
-        }, 1000);
+      } else {
+        navigate('/');
       }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Email hoặc mật khẩu không đúng';

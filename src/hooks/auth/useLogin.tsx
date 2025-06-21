@@ -15,7 +15,14 @@ export const useLoginForm = () => {
   const onSubmit = async (data: any) => {
     try {
       const res = await axios.post('http://localhost:8888/auth/login', data);
+      const result = res.data;
 
+      // ✅ Kiểm tra dữ liệu trả về
+      if (!result?.token || typeof result.isAdmin === 'undefined') {
+        throw new Error("Dữ liệu phản hồi không hợp lệ từ server.");
+      }
+
+      // ✅ Hiển thị thông báo
       toast.success("Đăng nhập thành công!", {
         position: "top-right",
         autoClose: 3000,
@@ -26,16 +33,20 @@ export const useLoginForm = () => {
         progress: undefined,
       });
 
-      const result = res.data;
-
-      // Lưu token và isAdmin vào localStorage
+      // ✅ Lưu token, role
       localStorage.setItem('token', result.token);
-      localStorage.setItem('isAdmin', JSON.stringify(result.isAdmin)); // lưu dưới dạng string
+      localStorage.setItem('isAdmin', JSON.stringify(result.isAdmin));
 
-      // Điều hướng theo isAdmin
+      // ✅ Chỉ lưu user nếu tồn tại
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+      } else {
+        console.warn("⚠️ Không có 'user' trong phản hồi từ API. Không lưu vào localStorage.");
+      }
+
+      // ✅ Điều hướng
       if (result.isAdmin) {
-        window.location.href=('http://localhost:5174/dashboard');
-
+        window.location.href = 'http://localhost:5174/dashboard';
       } else {
         navigate('/');
       }

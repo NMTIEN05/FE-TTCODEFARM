@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
+import {
+  Heart,
+  ShoppingCart,
+  Minus,
+  Plus,
+  Truck,
+  Shield,
+  RotateCcw,
+} from 'lucide-react';
 import { Ibook } from '../../../types/Book';
 
 const Detail = () => {
@@ -9,14 +17,23 @@ const Detail = () => {
   const [product, setProduct] = useState<Ibook | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
 
+  // ✅ Lấy user từ localStorage an toàn tuyệt đối
+  let user: any = null;
+  try {
+    const stored = localStorage.getItem('user');
+    if (stored && stored !== 'undefined') {
+      user = JSON.parse(stored);
+    }
+  } catch (err) {
+    console.error('Lỗi khi parse localStorage user:', err);
+  }
+  const userId = user?._id;
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`http://localhost:8888/api/books/${id}`);
-        console.log('Fetched product:', res.data.data);
-
         setProduct(res.data.data.data);
-        console.log('Product detail:', res.data.data); // Debug
       } catch (error) {
         console.error('Lỗi khi gọi API chi tiết sản phẩm:', error);
       }
@@ -24,6 +41,27 @@ const Detail = () => {
 
     if (id) fetchProduct();
   }, [id]);
+
+  const handleAddToCart = async () => {
+    if (!product || !id) return;
+
+    if (!userId) {
+      alert("Vui lòng đăng nhập để thêm vào giỏ hàng.");
+      return;
+    }
+
+    try {
+      await axios.post('http://localhost:8888/api/cart-add', {
+        user_id: userId,
+        book_id: id,
+        quantity,
+      });
+      alert('Đã thêm vào giỏ hàng thành công!');
+    } catch (error) {
+      console.error('Lỗi khi thêm vào giỏ hàng:', error);
+      alert('Thêm vào giỏ hàng thất bại!');
+    }
+  };
 
   if (!product) return <div className="text-center py-10">Đang tải chi tiết sản phẩm...</div>;
 
@@ -48,18 +86,26 @@ const Detail = () => {
 
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>
-          <p className="text-lg text-gray-600 mb-4">Tác giả: <span className="font-medium">{product.publisher}</span></p>
+          <p className="text-lg text-gray-600 mb-4">
+            Tác giả: <span className="font-medium">{product.publisher}</span>
+          </p>
 
           {/* Price */}
           <div className="mb-6 flex items-center space-x-4">
-            <span className="text-3xl font-bold text-indigo-600">{product.price ?? 200000}đ</span>
+            <span className="text-3xl font-bold text-indigo-600">
+              {product.price ?? 200000}đ
+            </span>
             <span className="text-xl text-gray-500 line-through">200.000đ</span>
-            <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">20%</span>
+            <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
+              20%
+            </span>
           </div>
 
           {/* Quantity */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Số lượng
+            </label>
             <div className="flex items-center space-x-3">
               <button
                 className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
@@ -79,7 +125,10 @@ const Detail = () => {
 
           {/* Actions */}
           <div className="flex space-x-4 mb-6">
-            <button className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 flex items-center justify-center space-x-2">
+            <button
+              className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 flex items-center justify-center space-x-2"
+              onClick={handleAddToCart}
+            >
               <ShoppingCart className="h-5 w-5" />
               <span>Thêm vào giỏ hàng</span>
             </button>
@@ -108,7 +157,9 @@ const Detail = () => {
 
       <div className="border-t pt-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Mô tả</h2>
-        <p className="text-gray-700 leading-relaxed whitespace-pre-line">{product.description}</p>
+        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+          {product.description}
+        </p>
       </div>
     </main>
   );

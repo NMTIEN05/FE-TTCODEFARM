@@ -10,7 +10,7 @@ const DetelProduct = (props: Props) => {
   return (
    <>
     <Detail />  
-    <Commet />
+    <Commet bookId="abc123" />
     </>
   )
 }

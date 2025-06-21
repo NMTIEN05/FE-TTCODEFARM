@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
+import { Star, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
 import { Ibook } from '../../../types/Book';
+import { SimpleWishlistButton } from '../../../components/wishlist/SimpleWishlistButton';
 
 const Detail = () => {
   const { id } = useParams();
@@ -48,11 +49,12 @@ const Detail = () => {
 
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.title}</h1>
-          <p className="text-lg text-gray-600 mb-4">Tác giả: <span className="font-medium">{product.publisher}</span></p>
+          <p className="text-lg text-gray-600 mb-4">Tác giả: <span className="font-medium">{product.author_id?.name || 'Chưa có thông tin'}</span></p>
+          <p className="text-lg text-gray-600 mb-4">Nhà xuất bản: <span className="font-medium">{product.publisher}</span></p>
 
           {/* Price */}
           <div className="mb-6 flex items-center space-x-4">
-            <span className="text-3xl font-bold text-indigo-600">{product.price ?? 200000}đ</span>
+            <span className="text-3xl font-bold text-indigo-600">{product.price ? product.price.toLocaleString('vi-VN') : '200,000'}đ</span>
             <span className="text-xl text-gray-500 line-through">200.000đ</span>
             <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">20%</span>
           </div>
@@ -83,9 +85,10 @@ const Detail = () => {
               <ShoppingCart className="h-5 w-5" />
               <span>Thêm vào giỏ hàng</span>
             </button>
-            <button className="p-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
-              <Heart className="h-5 w-5" />
-            </button>
+            <SimpleWishlistButton
+              bookId={product._id}
+              className="p-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+            />
           </div>
 
           {/* Features */}

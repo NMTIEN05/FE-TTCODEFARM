@@ -2,10 +2,11 @@ import React from 'react'
 import FlasSale from './components/FlasSale'
 import { useStore } from '../../stores/common.store'
 import Product from './components/Product'
-import { SearchOutlined, UserOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import Nav from './components/Nav';
 import Blog from './components/Blog';
 import ServiceInfo from './components/ServiceInfo';
+import HeroBanner from './components/HeroBanner';
+import QuickActions from './components/QuickActions';
 
 
 type Props = {}
@@ -17,10 +18,10 @@ const HomePage = (props: Props) => {
 
   return (
     <>
+    <HeroBanner />
     <Nav/>
+    <QuickActions />
     <FlasSale />
-    <div className='text-red-500 text-14 font-bold underline'></div>
-
     <Product/>
     <Blog/>
     <ServiceInfo/>

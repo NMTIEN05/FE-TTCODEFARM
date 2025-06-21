@@ -1,86 +1,120 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-
-import ViewAllButton from './comon/Button';
 import { Ibook } from '../../../types/Book';
+import { ICategory } from '../../../types/Category';
+import { SimpleWishlistButton } from '../../../components/wishlist/SimpleWishlistButton';
 
-const ProductByCategory = () => {
-  const { categoryId } = useParams<{ categoryId: string }>();
+const ProductByCategory: React.FC = () => {
+  const { categoryId } = useParams();
   const [products, setProducts] = useState<Ibook[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [category, setCategory] = useState<ICategory | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        // Gọi API lấy sách theo category_id đúng backend
-        const response = await axios.get(`http://localhost:8888/api/books?category_id=${categoryId}`);
-        console.log('Dữ liệu sản phẩm theo danh mục:', response.data);
+        
+        // Fetch all products and category info
+        const [productsRes, categoryRes] = await Promise.all([
+          axios.get('http://localhost:8888/api/books?limit=0'),
+          axios.get(`http://localhost:8888/api/categories/${categoryId}`)
+        ]);
 
-        // Kiểm tra dữ liệu trả về dạng phân trang với nested data
-        if (
-          response.data &&
-          response.data.data &&
-          Array.isArray(response.data.data.data)
-        ) {
-          setProducts(response.data.data.data); // Lấy mảng sản phẩm thật
-          console.log('Sản phẩm theo danh mục:', response.data.data.data);
-        } else {
-          console.warn('Dữ liệu trả về không hợp lệ:', response.data);
-          setProducts([]);
+        // Filter products by category on client side
+        if (productsRes.data?.data?.data) {
+          const allProducts = productsRes.data.data.data;
+          console.log('All products:', allProducts);
+          console.log('Category ID to filter:', categoryId);
+          
+          const filteredProducts = allProducts.filter((book: Ibook) => {
+            console.log('Book category_id:', book.category_id);
+            if (typeof book.category_id === 'object' && book.category_id?._id) {
+              return book.category_id._id === categoryId;
+            }
+            return book.category_id === categoryId;
+          });
+          
+          console.log('Filtered products:', filteredProducts);
+          setProducts(filteredProducts);
+        }
+        
+        // Set category info
+        if (categoryRes.data?.data?.data) {
+          setCategory(categoryRes.data.data.data);
+        } else if (categoryRes.data?.data) {
+          setCategory(categoryRes.data.data);
         }
       } catch (error) {
-        console.error('Lỗi khi gọi API sản phẩm theo danh mục:', error);
+        console.error('Error fetching category products:', error);
         setProducts([]);
+        setCategory(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    if (categoryId) fetchData();
   }, [categoryId]);
 
   if (loading) {
-    return <div className="text-center mt-10">Đang tải...</div>;
+    return <div className="container mx-auto px-4 py-8 text-center">Đang tải...</div>;
   }
 
   return (
-    <div className="ml-40 mr-40 mt-20 mb-20">
-      <h2 className="text-2xl font-bold text-gray-800 mb-8">Sản phẩm trong danh mục</h2>
+    <div className="mx-4 md:mx-20 lg:mx-40 mt-10 mb-20">
+      <div className="mb-8">
+        <nav className="text-sm mb-4">
+          <Link to="/" className="text-gray-500 hover:text-blue-600">Trang chủ</Link>
+          <span className="mx-2">/</span>
+          <span className="text-gray-900">{category?.name}</span>
+        </nav>
+        <h1 className="text-3xl font-bold text-gray-800">
+          {category?.name} ({products.length} sản phẩm)
+        </h1>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-        {products.length > 0 ? (
-          products.map((item) => (
-            <Link to={`/detail/${item._id}`} key={item._id}>
-              <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden flex flex-col h-full">
+      {products.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Không có sản phẩm nào trong danh mục này</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {products.map((book) => (
+            <Link to={`/detail/${book._id}`} key={book._id}>
+              <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden">
+                <div className="absolute top-4 right-4 z-20">
+                  <SimpleWishlistButton
+                    bookId={book._id}
+                    className="bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
+                  />
+                </div>
+                
                 <div className="relative overflow-hidden bg-gray-100 aspect-square">
                   <img
-                    src={item.cover_image}
-                    alt={item.title}
+                    src={book.cover_image}
+                    alt={book.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </div>
 
-                <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 flex-grow">{item.title}</h3>
-
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xl font-bold text-blue-600">{item.price.toLocaleString('vi-VN')}₫</span>
-                    <span className="text-sm text-gray-400 line-through">
-                      {(item.price * 1.12).toLocaleString('vi-VN')}₫
-                    </span>
-                  </div>
+                <div className="p-4">
+                  <h3 className="text-sm md:text-base font-bold text-gray-800 mb-2 line-clamp-2">
+                    {book.title}
+                  </h3>
+                  <p className="text-xs md:text-sm text-gray-600 mb-2">
+                    {book.author_id?.name || 'Chưa có thông tin'}
+                  </p>
+                  <p className="text-lg font-bold text-blue-600">
+                    {book.price ? book.price.toLocaleString('vi-VN') : '0'}₫
+                  </p>
                 </div>
               </div>
             </Link>
-          ))
-        ) : (
-          <div className="text-center col-span-4">Không có sản phẩm nào trong danh mục này</div>
-        )}
-      </div>
-
-      <ViewAllButton />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

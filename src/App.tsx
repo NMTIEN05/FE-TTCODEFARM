@@ -3,6 +3,8 @@ import React, { useEffect } from 'react';
 import { router } from './router/route';
 import axios from 'axios';
 import { ToastContainer } from 'react-toastify';
+import { CartProvider } from './providers/CartProvider';
+import { WishlistProvider } from './providers/WishlistProvider';
 
 const App:React.FC = () => {
     
@@ -16,10 +18,14 @@ const App:React.FC = () => {
         console.error("Lỗi khi gọi API:", error);  // Hiển thị lỗi khi gọi API
       });
   }, []);
-  return <>
-      <RouterProvider router={router} />
-      <ToastContainer />
-    </>
+  return (
+    <WishlistProvider>
+      <CartProvider>
+        <RouterProvider router={router} />
+        <ToastContainer />
+      </CartProvider>
+    </WishlistProvider>
+  )
 
 }
 export default App;

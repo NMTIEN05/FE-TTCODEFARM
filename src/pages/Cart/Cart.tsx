@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import {
   Trash2,
   Plus,
@@ -7,82 +6,89 @@ import {
   ShoppingCart,
   CreditCard,
   ArrowLeft,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
+import { useCart } from "../../providers/CartProvider";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState<any[]>([]);
-  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const { cartItems, totalPrice, cartCount, loading, updateQuantity, removeItem, clearCart, validateStock } = useCart();
+  const [isValidating, setIsValidating] = useState(false);
+  const navigate = useNavigate();
 
-  const fetchCart = async () => {
+  const handleCheckout = async () => {
     try {
-      const storedUser = localStorage.getItem("user");
-      const user = storedUser ? JSON.parse(storedUser) : null;
-      const userId = user?._id;
-
-      if (!userId) return;
-
-      const res = await axios.get(`http://localhost:8888/api/cart/${userId}`);
-      const result = res.data?.data?.data?.items || [];
-      const filteredItems = result.filter((item: any) => item.book_id);
-      setCartItems(filteredItems);
-
-      const total = filteredItems.reduce(
-        (sum: number, item: any) => sum + item.book_id.price * item.quantity,
-        0
-      );
-      setTotalPrice(total);
-    } catch (error) {
-      console.error("Lỗi khi lấy giỏ hàng:", error);
+      setIsValidating(true);
+      await validateStock();
+      // Chuyển đến trang thanh toán
+      alert('Chuyển đến trang thanh toán');
+    } catch (error: any) {
+      alert(error.message || 'Có lỗi xảy ra khi kiểm tra tồn kho');
+    } finally {
+      setIsValidating(false);
     }
   };
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  const updateQuantity = async (itemId: string, newQty: number) => {
-    try {
-      // Cập nhật ngay trên UI
-      const updated = cartItems.map((item) =>
-        item._id === itemId ? { ...item, quantity: newQty } : item
-      );
-      setCartItems(updated);
-
-      // Gọi API cập nhật
-      await axios.put(`http://localhost:8888/api/cart-update/${itemId}`, {
-        quantity: newQty,
-      });
-
-      // Cập nhật lại tổng
-      const total = updated.reduce(
-        (sum: number, item: any) => sum + item.book_id.price * item.quantity,
-        0
-      );
-      setTotalPrice(total);
-    } catch (error) {
-      console.error("Lỗi khi cập nhật số lượng:", error);
+  const handleClearCart = async () => {
+    if (window.confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) {
+      try {
+        await clearCart();
+      } catch (error) {
+        alert('Có lỗi khi xóa giỏ hàng');
+      }
     }
   };
 
-  const deleteItem = async (itemId: string) => {
-    try {
-      await axios.delete(`http://localhost:8888/api/cart-remove/${itemId}`);
-      fetchCart();
-    } catch (error) {
-      console.error("Lỗi khi xoá sản phẩm:", error);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 px-4 text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+        <p>Đang tải giỏ hàng...</p>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto py-20 px-4 text-center">
+        <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+        <h2 className="text-2xl font-bold mb-2">Giỏ hàng trống</h2>
+        <p className="text-gray-600 mb-6">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+        <button 
+          onClick={() => navigate('/')}
+          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
+        >
+          Tiếp tục mua sắm
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="flex items-center justify-between mb-8">
-        <button className="flex items-center space-x-2 text-gray-600 hover:text-black">
+        <button 
+          onClick={() => navigate('/')}
+          className="flex items-center space-x-2 text-gray-600 hover:text-black"
+        >
           <ArrowLeft className="w-5 h-5" />
           <span>Tiếp tục mua sắm</span>
         </button>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShoppingCart /> Giỏ hàng
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <ShoppingCart /> Giỏ hàng ({cartCount} sản phẩm)
+          </h1>
+          {cartItems.length > 0 && (
+            <button
+              onClick={handleClearCart}
+              className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1"
+            >
+              <Trash2 className="w-4 h-4" />
+              Xóa tất cả
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -99,39 +105,43 @@ const Cart = () => {
               />
               <div>
                 <h2 className="text-lg font-semibold">{item.book_id?.title}</h2>
-                <p className="text-sm text-gray-600">{item.book_id?.author}</p>
-                <div className="flex items-center mt-2">
+                <p className="text-sm text-gray-600">
+                  Tác giả: {item.book_id?.author_id?.name || 'Chưa có thông tin'}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Đơn giá: {item.price.toLocaleString()}đ
+                </p>
+                <div className="flex items-center mt-2 border rounded-lg">
                   <button
-                    className="p-1"
+                    className="p-2 hover:bg-gray-100 disabled:opacity-50"
+                    disabled={item.quantity <= 1}
                     onClick={() =>
-                      item._id &&
-                      item.quantity > 1 &&
-                      updateQuantity(item._id, item.quantity - 1)
+                      item._id && updateQuantity(item._id, item.quantity - 1)
                     }
                   >
-                    <Minus />
+                    <Minus className="w-4 h-4" />
                   </button>
-                  <span className="px-3">{item.quantity}</span>
+                  <span className="px-4 py-2 min-w-[50px] text-center font-medium">{item.quantity}</span>
                   <button
-                    className="p-1"
+                    className="p-2 hover:bg-gray-100"
                     onClick={() =>
-                      item._id &&
-                      updateQuantity(item._id, item.quantity + 1)
+                      item._id && updateQuantity(item._id, item.quantity + 1)
                     }
                   >
-                    <Plus />
+                    <Plus className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </div>
 
             <div className="text-right">
-              <p className="font-bold text-red-600">
-                {(item.book_id?.price * item.quantity).toLocaleString()}đ
+              <p className="font-bold text-red-600 text-lg">
+                {(item.price * item.quantity).toLocaleString()}đ
               </p>
               <button
-                className="text-gray-500 hover:text-red-600 mt-2"
-                onClick={() => item._id && deleteItem(item._id)}
+                className="text-gray-500 hover:text-red-600 mt-2 p-1 rounded hover:bg-red-50"
+                onClick={() => item._id && removeItem(item._id)}
+                title="Xóa sản phẩm"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -140,13 +150,39 @@ const Cart = () => {
         ))}
       </div>
 
-      <div className="mt-10 p-6 border-t">
-        <div className="flex justify-between items-center text-lg font-semibold">
-          <span>Tổng tiền:</span>
-          <span className="text-red-600">{totalPrice.toLocaleString()}đ</span>
+      <div className="mt-10 p-6 border-t bg-gray-50 rounded-lg">
+        <div className="space-y-2 mb-4">
+          <div className="flex justify-between text-sm">
+            <span>Số lượng sản phẩm:</span>
+            <span>{cartCount}</span>
+          </div>
+          <div className="flex justify-between text-lg font-semibold border-t pt-2">
+            <span>Tổng tiền:</span>
+            <span className="text-red-600">{totalPrice.toLocaleString()}đ</span>
+          </div>
         </div>
-        <button className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2">
-          <CreditCard /> Thanh toán ngay
+        
+        <div className="flex items-center gap-2 mb-4 text-sm text-amber-600">
+          <AlertCircle className="w-4 h-4" />
+          <span>Vui lòng kiểm tra kỹ thông tin trước khi thanh toán</span>
+        </div>
+        
+        <button 
+          onClick={handleCheckout}
+          disabled={isValidating || cartItems.length === 0}
+          className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isValidating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Đang kiểm tra...
+            </>
+          ) : (
+            <>
+              <CreditCard className="w-4 h-4" />
+              Thanh toán ngay
+            </>
+          )}
         </button>
       </div>
     </div>

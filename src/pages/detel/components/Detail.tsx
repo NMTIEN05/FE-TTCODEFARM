@@ -1,26 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
+import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw, Loader2 } from 'lucide-react';
 import { Ibook } from '../../../types/Book';
-import { SimpleWishlistButton } from '../../../components/wishlist/SimpleWishlistButton';
+import WishlistButton from '../../../components/wishlist/WishlistButton';
+import { useCart } from '../../../providers/CartProvider';
 
 const Detail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Ibook | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
-
-  // ✅ Lấy user từ localStorage an toàn tuyệt đối
-  let user: any = null;
-  try {
-    const stored = localStorage.getItem('user');
-    if (stored && stored !== 'undefined') {
-      user = JSON.parse(stored);
-    }
-  } catch (err) {
-    console.error('Lỗi khi parse localStorage user:', err);
-  }
-  const userId = user?._id;
+  const [isAdding, setIsAdding] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -38,21 +29,14 @@ const Detail = () => {
   const handleAddToCart = async () => {
     if (!product || !id) return;
 
-    if (!userId) {
-      alert("Vui lòng đăng nhập để thêm vào giỏ hàng.");
-      return;
-    }
-
     try {
-      await axios.post('http://localhost:8888/api/cart-add', {
-        user_id: userId,
-        book_id: id,
-        quantity,
-      });
+      setIsAdding(true);
+      await addToCart(id, quantity);
       alert('Đã thêm vào giỏ hàng thành công!');
-    } catch (error) {
-      console.error('Lỗi khi thêm vào giỏ hàng:', error);
-      alert('Thêm vào giỏ hàng thất bại!');
+    } catch (error: any) {
+      alert(error.message || 'Có lỗi khi thêm vào giỏ hàng');
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -97,35 +81,62 @@ const Detail = () => {
             </label>
             <div className="flex items-center space-x-3">
               <button
-                className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
               >
                 <Minus className="h-4 w-4" />
               </button>
               <span className="w-16 text-center text-lg font-medium">{quantity}</span>
               <button
-                className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                onClick={() => setQuantity(q => q + 1)}
+                className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
+                onClick={() => setQuantity(q => Math.min(product?.stock_quantity || 1, q + 1))}
+                disabled={quantity >= (product?.stock_quantity || 1)}
               >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
           </div>
 
+          {/* Stock info */}
+          <div className="mb-4">
+            <span className="text-sm text-gray-600">
+              Còn lại: <span className="font-medium text-green-600">{product.stock_quantity} sản phẩm</span>
+            </span>
+          </div>
+
           {/* Actions */}
           <div className="flex space-x-4 mb-6">
             <button
-              className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 flex items-center justify-center space-x-2"
+              className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               onClick={handleAddToCart}
+              disabled={isAdding || product.stock_quantity < quantity}
             >
-              <ShoppingCart className="h-5 w-5" />
-              <span>Thêm vào giỏ hàng</span>
+              {isAdding ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Đang thêm...</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Thêm vào giỏ hàng</span>
+                </>
+              )}
             </button>
-            <SimpleWishlistButton
+<WishlistButton 
               bookId={product._id}
-              className="p-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50"
+              className="!relative !top-0 !right-0 !p-3 !rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 !bg-transparent"
             />
           </div>
+
+          {product.stock_quantity < quantity && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">
+                Số lượng yêu cầu vượt quá tồn kho. Vui lòng chọn số lượng nhỏ hơn.
+              </p>
+            </div>
+          )}
 
           {/* Features */}
           <div className="space-y-3">

@@ -12,7 +12,7 @@ import Cart from "../pages/Cart/Cart";
 import Allproduct from "../pages/ProductAll/Allproduct";
 import ContactPage from "../pages/Contant/LienHe";
 import ProductByCategory from "../pages/home/components/ProductByCategory";
-import { Wishlist } from "../pages/Wishlist/Wishlist";
+import Wishlist from "../pages/Wishlist/Wishlist";
 import { SearchPage } from "../pages/Search/SearchPage";
  // <- import bảo vệ route
 

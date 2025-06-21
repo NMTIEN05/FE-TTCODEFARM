@@ -1,18 +1,29 @@
 import React from 'react'
 import { Button } from 'antd'
 import { RightOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 
-type Props = {}
+type Props = {
+  to?: string;
+  text?: string;
+}
 
-const ViewAllButton = (props: Props) => {
+const ViewAllButton = ({ to = '/allproduct', text = 'Xem tất cả' }: Props) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(to);
+  };
+
   return (
-    <div className="flex justify-center items-center mt-5 ">
+    <div className="flex justify-center items-center mt-5">
       <Button
         type="primary"
-        className=" rounded-full px-6 py-2 text-lg font-semibold shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center gap-2"
-        style={{ backgroundColor: "#f97316", borderColor: "#ea580c" }} // màu cam Tailwind orange-500
+        onClick={handleClick}
+        className="rounded-full px-6 py-2 text-lg font-semibold shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center gap-2"
+        style={{ backgroundColor: "#f97316", borderColor: "#ea580c" }}
       > 
-        Xem tất cả
+        {text}
         <RightOutlined />
       </Button>
     </div>

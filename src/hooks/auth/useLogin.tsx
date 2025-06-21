@@ -34,7 +34,7 @@ export const useLoginForm = () => {
 
       // Điều hướng theo isAdmin
       if (result.isAdmin) {
-        window.location.href=('http://localhost:5174/dashboard');
+        window.location.href=('http://localhost:5174/');
 
       } else {
         navigate('/');

@@ -1,18 +1,23 @@
-import { SearchOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons'
+import { ShoppingCartOutlined, UserOutlined, HeartOutlined } from '@ant-design/icons'
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
+import { SearchBar } from './SearchBar';
+import { WishlistBadge } from './WishlistBadge';
 
 type Props = {}
 
 
 const Header = (props: Props) => {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleClick = () => {
     navigate('/auth/login');
   };
     const handleCart = () => {
     navigate('/cart');
+  };
+  const handleWishlist = () => {
+    navigate('/wishlist');
   };
   return (
    <header className="bg-white shadow">
@@ -29,23 +34,13 @@ const Header = (props: Props) => {
       <ul className="flex space-x-6 text-gray-700 font-medium">
         <li><a href="/" className="hover:text-blue-600">Trang chủ</a></li>
         <li><a href="/allproduct" className="hover:text-blue-600">Sản phẩm</a></li>
+        <li><a href="/wishlist" className="hover:text-blue-600">Yêu thích</a></li>
         <li><a href="/contant" className="hover:text-blue-600">Liên hệ</a></li>
       </ul>
     </nav>
 
     {/* Search Bar */}
-    <div className="hidden md:flex items-center space-x-2 bg-gray-100 px-2 py-1 rounded-md">
-      <input
-        type="text"
-        placeholder="Tìm kiếm sản phẩm..."
-        className="bg-transparent focus:outline-none text-sm px-2 py-1 w-40"
-      />
-      <button className="text-gray-600 hover:text-blue-600">
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M15.5 14h-.79l-.28-.27A6.471..." />
-        </svg>
-      </button>
-    </div>
+    <SearchBar />
 
     {/* Header Icons */}
     <div className="flex items-center space-x-4 ">
@@ -55,6 +50,10 @@ const Header = (props: Props) => {
   <UserOutlined className="text-xl mr-5" />
 </button>
 
+<button onClick={handleWishlist} className="relative text-gray-700 hover:text-red-600 mr-5" title="Yêu thích">
+  <HeartOutlined className="text-xl" />
+  <WishlistBadge />
+</button>
 
 <button onClick={handleCart} className="relative text-gray-700 hover:text-blue-600" title="Giỏ hàng">
       <ShoppingCartOutlined className="text-2xl" />

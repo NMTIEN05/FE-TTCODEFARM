@@ -1,9 +1,10 @@
-import { HeartOutlined, StarFilled } from '@ant-design/icons';
+import { StarFilled } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
 import ViewAllButton from './comon/Button';
 import { Link } from 'react-router-dom';
 import { Ibook } from '../../../types/Book';
 import axios from 'axios';
+import { SimpleWishlistButton } from '../../../components/wishlist/SimpleWishlistButton';
 
 type Props = {}
 
@@ -29,14 +30,14 @@ useEffect(() => {
 
 
   return (
-    <div className="ml-40 mr-40 mt-20 mb-20">
+    <div className="mx-4 md:mx-20 lg:mx-40 mt-10 md:mt-20 mb-10 md:mb-20">
       <div className="mt-8 mb-10">
         <h2 className="relative inline-block text-2xl md:text-3xl font-bold text-gray-800 before:content-[''] before:inline-block before:mr-4 before:w-1 before:h-6 before:bg-red-500 align-middle">
           Tất cả sản phẩm của chúng tôi
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
   {book.map((item) => (
     <Link to={`/detail/${item._id}`} key={item._id}>
       <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col">
@@ -46,12 +47,12 @@ useEffect(() => {
         </div>
 
         {/* Favorite Button */}
-        <button className="absolute top-4 right-4 z-20 p-3 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all duration-300 group">
-          <HeartOutlined
-            className="text-gray-400 group-hover:text-red-500 transition-all duration-300"
-            style={{ fontSize: 20 }}
+        <div className="absolute top-4 right-4 z-20">
+          <SimpleWishlistButton
+            bookId={item._id}
+            className="bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
           />
-        </button>
+        </div>
 
         {/* Image Container */}
         <div className="relative overflow-hidden bg-gray-100 aspect-square">
@@ -71,10 +72,10 @@ useEffect(() => {
           {/* Price - Luôn ở dưới cùng */}
           <div className="flex items-center gap-3 mb-4">
             <span className="text-xl font-bold text-blue-600">
-              {item.price.toLocaleString('vi-VN')}₫
+              {item.price ? item.price.toLocaleString('vi-VN') : '0'}₫
             </span>
             <span className="text-sm text-gray-400 line-through">
-              {(item.price * 1.12).toLocaleString('vi-VN')}₫
+              {item.price ? (item.price * 1.12).toLocaleString('vi-VN') : '0'}₫
             </span>
           </div>
 
@@ -99,7 +100,10 @@ useEffect(() => {
   ))}
 </div>
 
-      <ViewAllButton />
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <ViewAllButton text="Xem tất cả sản phẩm" to="/allproduct" />
+        <ViewAllButton text="Sản phẩm yêu thích" to="/wishlist" />
+      </div>
     </div>
   );
 };

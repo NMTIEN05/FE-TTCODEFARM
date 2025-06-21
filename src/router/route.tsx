@@ -12,6 +12,8 @@ import Cart from "../pages/Cart/Cart";
 import Allproduct from "../pages/ProductAll/Allproduct";
 import ContactPage from "../pages/Contant/LienHe";
 import ProductByCategory from "../pages/home/components/ProductByCategory";
+import { Wishlist } from "../pages/Wishlist/Wishlist";
+import { SearchPage } from "../pages/Search/SearchPage";
  // <- import bảo vệ route
 
 export const router = createBrowserRouter([
@@ -43,6 +45,14 @@ export const router = createBrowserRouter([
      {
     path: "/category/:categoryId",
     element: <ProductByCategory />,
+  },
+  {
+    path: "/wishlist",
+    element: <Wishlist />,
+  },
+  {
+    path: "/search",
+    element: <SearchPage />,
   },
 
     ],

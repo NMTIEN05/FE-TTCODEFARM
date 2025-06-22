@@ -8,26 +8,17 @@ import {
   ArrowLeft,
   AlertCircle,
   Loader2,
+  Package,
 } from "lucide-react";
 import { useCart } from "../../providers/CartProvider";
 import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const { cartItems, totalPrice, cartCount, loading, updateQuantity, removeItem, clearCart, validateStock } = useCart();
-  const [isValidating, setIsValidating] = useState(false);
+  const { cartItems, totalPrice, cartCount, loading, updateQuantity, removeItem, clearCart } = useCart();
   const navigate = useNavigate();
 
-  const handleCheckout = async () => {
-    try {
-      setIsValidating(true);
-      await validateStock();
-      // Chuyển đến trang thanh toán
-      alert('Chuyển đến trang thanh toán');
-    } catch (error: any) {
-      alert(error.message || 'Có lỗi xảy ra khi kiểm tra tồn kho');
-    } finally {
-      setIsValidating(false);
-    }
+  const handleCheckout = () => {
+    navigate('/checkout');
   };
 
   const handleClearCart = async () => {
@@ -75,19 +66,28 @@ const Cart = () => {
           <ArrowLeft className="w-5 h-5" />
           <span>Tiếp tục mua sắm</span>
         </button>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <ShoppingCart /> Giỏ hàng ({cartCount} sản phẩm)
           </h1>
-          {cartItems.length > 0 && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={handleClearCart}
-              className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1"
+              onClick={() => navigate('/orders')}
+              className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1 px-3 py-1 border border-indigo-600 rounded-lg hover:bg-indigo-50"
             >
-              <Trash2 className="w-4 h-4" />
-              Xóa tất cả
+              <Package className="w-4 h-4" />
+              Lịch sử đơn hàng
             </button>
-          )}
+            {cartItems.length > 0 && (
+              <button
+                onClick={handleClearCart}
+                className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1"
+              >
+                <Trash2 className="w-4 h-4" />
+                Xóa tất cả
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -169,20 +169,11 @@ const Cart = () => {
         
         <button 
           onClick={handleCheckout}
-          disabled={isValidating || cartItems.length === 0}
+          disabled={cartItems.length === 0}
           className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {isValidating ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Đang kiểm tra...
-            </>
-          ) : (
-            <>
-              <CreditCard className="w-4 h-4" />
-              Thanh toán ngay
-            </>
-          )}
+          <CreditCard className="w-4 h-4" />
+          Thanh toán ngay
         </button>
       </div>
     </div>

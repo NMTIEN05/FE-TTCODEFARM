@@ -93,7 +93,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!userId) return;
 
     // Cập nhật UI ngay lập tức
-    const updatedItems = wishlistItems.filter(item => item.book_id._id !== bookId);
+    const updatedItems = wishlistItems.filter(item => item.book_id?._id !== bookId);
     setWishlistItems(updatedItems);
     setWishlistCount(updatedItems.length);
 
@@ -110,7 +110,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const isInWishlist = (bookId: string): boolean => {
-    return wishlistItems.some(item => item.book_id._id === bookId);
+    return wishlistItems.some(item => item.book_id?._id === bookId);
   };
 
   useEffect(() => {

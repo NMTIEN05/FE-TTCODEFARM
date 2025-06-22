@@ -8,7 +8,7 @@ interface CartContextType {
   totalPrice: number;
   cartCount: number;
   loading: boolean;
-  addToCart: (bookId: string, quantity?: number) => Promise<boolean>;
+  addToCart: (bookId: string, quantity?: number, variantId?: string) => Promise<boolean>;
   updateQuantity: (itemId: string, newQty: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -76,13 +76,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addToCart = async (bookId: string, quantity: number = 1): Promise<boolean> => {
+  const addToCart = async (bookId: string, quantity: number = 1, variantId?: string): Promise<boolean> => {
     if (!userId) {
       throw new Error('Vui lòng đăng nhập để thêm vào giỏ hàng');
     }
 
     try {
-      await cartService.addToCart(userId, bookId, quantity);
+      await cartService.addToCart(userId, bookId, quantity, variantId);
       await fetchCart();
       return true;
     } catch (error) {

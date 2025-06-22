@@ -9,12 +9,18 @@ export const cartService = {
   },
 
   // Thêm sản phẩm vào giỏ
-  addToCart: async (userId: string, bookId: string, quantity: number = 1) => {
-    const response = await axiosInstance.post('/api/cart-add', {
+  addToCart: async (userId: string, bookId: string, quantity: number = 1, variantId?: string) => {
+    const requestData: any = {
       user_id: userId,
       book_id: bookId,
       quantity,
-    });
+    };
+    
+    if (variantId) {
+      requestData.variant_id = variantId;
+    }
+    
+    const response = await axiosInstance.post('/api/cart-add', requestData);
     return response.data;
   },
 

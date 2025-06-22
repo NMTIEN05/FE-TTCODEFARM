@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Star, Heart, ShoppingCart, Minus, Plus, Truck, Shield, RotateCcw, Loader2 } from 'lucide-react';
-import { Ibook } from '../../../types/Book';
+import { Ibook, IProductVariant } from '../../../types/Book';
 import WishlistButton from '../../../components/wishlist/WishlistButton';
 import { useCart } from '../../../providers/CartProvider';
+import VariantSelector from '../../../components/VariantSelector';
+import { variantService } from '../../../services/variantService';
 
 const Detail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Ibook | null>(null);
+  const [variants, setVariants] = useState<IProductVariant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<IProductVariant | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [isAdding, setIsAdding] = useState(false);
   const { addToCart } = useCart();
@@ -23,15 +27,50 @@ const Detail = () => {
       }
     };
 
-    if (id) fetchProduct();
+    const fetchVariants = async () => {
+      if (id) {
+        const variantData = await variantService.getVariantsByBookId(id);
+        setVariants(variantData);
+        // Tự động chọn variant đầu tiên nếu có
+        if (variantData.length > 0) {
+          const availableVariant = variantData.find(v => v.is_available && v.stock_quantity > 0);
+          if (availableVariant) {
+            setSelectedVariant(availableVariant);
+          }
+        }
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+      fetchVariants();
+    }
   }, [id]);
 
   const handleAddToCart = async () => {
     if (!product || !id) return;
 
+    // Nếu có variants nhưng chưa chọn variant
+    if (variants.length > 0 && !selectedVariant) {
+      alert('Vui lòng chọn định dạng sản phẩm!');
+      return;
+    }
+
+    // Kiểm tra tồn kho của variant được chọn
+    if (selectedVariant && selectedVariant.stock_quantity < quantity) {
+      alert('Số lượng yêu cầu vượt quá tồn kho của định dạng này!');
+      return;
+    }
+
     try {
       setIsAdding(true);
-      await addToCart(id, quantity);
+      // Truyền thêm thông tin variant nếu có
+      const cartData = {
+        bookId: id,
+        quantity,
+        variantId: selectedVariant?._id
+      };
+      await addToCart(id, quantity, selectedVariant?._id);
       alert('Đã thêm vào giỏ hàng thành công!');
     } catch (error: any) {
       alert(error.message || 'Có lỗi khi thêm vào giỏ hàng');
@@ -67,12 +106,21 @@ const Detail = () => {
 
           {/* Price */}
           <div className="mb-6 flex items-center space-x-4">
-            <span className="text-3xl font-bold text-indigo-600">{product.price ?? 200000}đ</span>
+            <span className="text-3xl font-bold text-indigo-600">
+              {selectedVariant ? selectedVariant.price.toLocaleString('vi-VN') : (product.price ?? 200000).toLocaleString('vi-VN')}đ
+            </span>
             <span className="text-xl text-gray-500 line-through">200.000đ</span>
             <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
               20%
             </span>
           </div>
+
+          {/* Variant Selector */}
+          <VariantSelector
+            variants={variants}
+            selectedVariant={selectedVariant}
+            onVariantSelect={setSelectedVariant}
+          />
 
           {/* Quantity */}
           <div className="mb-6">
@@ -90,8 +138,8 @@ const Detail = () => {
               <span className="w-16 text-center text-lg font-medium">{quantity}</span>
               <button
                 className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
-                onClick={() => setQuantity(q => Math.min(product?.stock_quantity || 1, q + 1))}
-                disabled={quantity >= (product?.stock_quantity || 1)}
+                onClick={() => setQuantity(q => Math.min(selectedVariant?.stock_quantity || product?.stock_quantity || 1, q + 1))}
+                disabled={quantity >= (selectedVariant?.stock_quantity || product?.stock_quantity || 1)}
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -101,7 +149,9 @@ const Detail = () => {
           {/* Stock info */}
           <div className="mb-4">
             <span className="text-sm text-gray-600">
-              Còn lại: <span className="font-medium text-green-600">{product.stock_quantity} sản phẩm</span>
+              Còn lại: <span className="font-medium text-green-600">
+                {selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity} sản phẩm
+              </span>
             </span>
           </div>
 
@@ -110,7 +160,7 @@ const Detail = () => {
             <button
               className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               onClick={handleAddToCart}
-              disabled={isAdding || product.stock_quantity < quantity}
+              disabled={isAdding || (selectedVariant ? selectedVariant.stock_quantity < quantity : product.stock_quantity < quantity) || (variants.length > 0 && !selectedVariant)}
             >
               {isAdding ? (
                 <>
@@ -130,10 +180,18 @@ const Detail = () => {
             />
           </div>
 
-          {product.stock_quantity < quantity && (
+          {((selectedVariant && selectedVariant.stock_quantity < quantity) || (!selectedVariant && product.stock_quantity < quantity)) && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-600 text-sm">
                 Số lượng yêu cầu vượt quá tồn kho. Vui lòng chọn số lượng nhỏ hơn.
+              </p>
+            </div>
+          )}
+
+          {variants.length > 0 && !selectedVariant && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-600 text-sm">
+                Vui lòng chọn định dạng sản phẩm trước khi thêm vào giỏ hàng.
               </p>
             </div>
           )}

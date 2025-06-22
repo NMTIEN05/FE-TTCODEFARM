@@ -4,6 +4,7 @@ import { SearchBar } from './SearchBar';
 import { useWishlist } from '../../providers/WishlistProvider';
 import { useLogout } from '../../hooks/auth/useLogout';
 import { useCart } from '../../providers/CartProvider';
+import NotificationBell from './NotificationBell';
 
 type Props = {}
 
@@ -42,6 +43,7 @@ const Header = (props: Props) => {
         <li><a href="/" className="hover:text-blue-600">Trang chủ</a></li>
         <li><a href="/allproduct" className="hover:text-blue-600">Sản phẩm</a></li>
         <li><a href="/wishlist" className="hover:text-blue-600">Yêu thích</a></li>
+        <li><a href="/orders" className="hover:text-blue-600">Đơn hàng</a></li>
         <li><a href="/contant" className="hover:text-blue-600">Liên hệ</a></li>
       </ul>
     </nav>
@@ -52,6 +54,7 @@ const Header = (props: Props) => {
     {/* Header Icons */}
     <div className="flex items-center space-x-4 ">
       
+{isLoggedIn && <NotificationBell />}
   
 {!isLoggedIn ? (
   <button onClick={handleClick} className="text-gray-700 hover:text-blue-600" title="Đăng nhập">

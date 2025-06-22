@@ -1,9 +1,9 @@
 import { ShoppingCartOutlined, UserOutlined, HeartOutlined, LogoutOutlined } from '@ant-design/icons'
-import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { SearchBar } from './SearchBar';
-import { WishlistBadge } from './WishlistBadge';
+import { useWishlist } from '../../providers/WishlistProvider';
 import { useLogout } from '../../hooks/auth/useLogout';
+import { useCart } from '../../providers/CartProvider';
 
 type Props = {}
 
@@ -11,6 +11,10 @@ type Props = {}
 const Header = (props: Props) => {
   const navigate = useNavigate();
   const { logout } = useLogout();
+  
+
+  const { cartCount, totalPrice } = useCart();
+  const { wishlistCount } = useWishlist();
   const isLoggedIn = !!localStorage.getItem('token');
 
   const handleClick = () => {
@@ -61,16 +65,22 @@ const Header = (props: Props) => {
 
 <button onClick={handleWishlist} className="relative text-gray-700 hover:text-red-600 mr-5" title="Yêu thích">
   <HeartOutlined className="text-xl" />
-  <WishlistBadge />
+  {wishlistCount > 0 && (
+    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+      {wishlistCount}
+    </span>
+  )}
 </button>
 
-<button onClick={handleCart} className="relative text-gray-700 hover:text-blue-600" title="Giỏ hàng">
-      <ShoppingCartOutlined className="text-2xl" />
-      
-      {/* Badge */}
-      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-        3
-      </span>
+<button onClick={handleCart} className="relative flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Giỏ hàng">
+      <div className="relative">
+        <ShoppingCartOutlined className="text-2xl" />
+        {cartCount > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+            {cartCount > 99 ? '99+' : cartCount}
+          </span>
+        )}
+      </div>
     </button>
 
 

@@ -4,7 +4,8 @@ import ViewAllButton from './comon/Button';
 import { Link } from 'react-router-dom';
 import { Ibook } from '../../../types/Book';
 import axios from 'axios';
-import { SimpleWishlistButton } from '../../../components/wishlist/SimpleWishlistButton';
+import WishlistButton from '../../../components/wishlist/WishlistButton';
+import { CartButton } from '../../../components/cart';
 
 type Props = {}
 
@@ -47,12 +48,7 @@ useEffect(() => {
         </div>
 
         {/* Favorite Button */}
-        <div className="absolute top-4 right-4 z-20">
-          <SimpleWishlistButton
-            bookId={item._id}
-            className="bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
-          />
-        </div>
+        <WishlistButton bookId={item._id} />
 
         {/* Image Container */}
         <div className="relative overflow-hidden bg-gray-100 aspect-square">
@@ -79,8 +75,8 @@ useEffect(() => {
             </span>
           </div>
 
-          {/* Rating - Luôn ở dưới cùng */}
-          <div className="flex items-center gap-2">
+          {/* Rating */}
+          <div className="flex items-center gap-2 mb-4">
             <div className="flex">
               {Array(5)
                 .fill(0)
@@ -93,6 +89,15 @@ useEffect(() => {
                 ))}
             </div>
             <span className="text-sm text-gray-500">(124 đánh giá)</span>
+          </div>
+
+          {/* Add to Cart Button */}
+          <div className="mt-auto" onClick={(e) => e.preventDefault()}>
+            <CartButton 
+              bookId={item._id} 
+              size="sm" 
+              className="w-full"
+            />
           </div>
         </div>
       </div>

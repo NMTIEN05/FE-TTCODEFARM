@@ -22,7 +22,7 @@ export const useLoginForm = () => {
         // Lưu thông tin user vào localStorage
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify({
-          id: result._id,
+          _id: result._id,
           email: result.email,
           fullname: result.fullname,
           isAdmin: result.isAdmin
@@ -37,7 +37,7 @@ export const useLoginForm = () => {
         setTimeout(() => {
           if (result.isAdmin) {
             window.location.href = `http://localhost:5173/?token=${result.token}&user=${encodeURIComponent(JSON.stringify({
-              id: result._id,
+              _id: result._id,
               email: result.email,
               fullname: result.fullname,
               isAdmin: result.isAdmin

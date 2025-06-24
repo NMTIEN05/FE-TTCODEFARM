@@ -7,6 +7,7 @@ import HomePage from "../pages/home/HomePage";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Admin from "../admin";
 import Register from "../pages/auth/Register";
+import EmailOTPVerification from "../pages/auth/EmailOTPVerification";
 import DetelProduct from "../pages/detel/DetelProduct";
 import Cart from "../pages/Cart/Cart";
 import Allproduct from "../pages/ProductAll/Allproduct";
@@ -78,6 +79,10 @@ export const router = createBrowserRouter([
   {
     path: "/auth/login",
     element: <Login />,
+  },
+  {
+    path: "/auth/verify-otp",
+    element: <EmailOTPVerification />,
   },
 
   {

@@ -76,10 +76,14 @@ const Checkout = () => {
           status: 'pending',
           details: cartItems.map(item => ({
             book_id: item.book_id?._id || '',
+            variant_id: item.variant_id?._id || null,
             quantity: item.quantity,
             price: item.price
           }))
         };
+        
+        console.log('Order data being sent:', orderData);
+        console.log('Cart items:', cartItems);
         
         // Gọi API tạo đơn hàng
         const response = await orderService.createOrder(orderData);

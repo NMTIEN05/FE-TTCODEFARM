@@ -13,11 +13,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../providers/CartProvider";
 import { orderService } from "../../services/orderService";
+import { useVNPay } from "../../hooks/useVNPay";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems, totalPrice, cartCount, clearCart } = useCart();
   const [selectedPayment, setSelectedPayment] = useState("cod");
+  const { createPayment, isLoading } = useVNPay();
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
     phone: "",
@@ -41,8 +43,47 @@ const Checkout = () => {
       return;
     }
 
-    if (selectedPayment === "zalopay") {
-      alert("Chuyển đến ZaloPay để thanh toán");
+    if (selectedPayment === "vnpay") {
+      // Thanh toán VNPAY
+      const orderId = Date.now().toString();
+      
+      // Lấy userId từ token
+      let userId;
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.id;
+          console.log('VNPay - UserId from token:', userId);
+      console.log('VNPay - Customer info:', customerInfo);
+      console.log('VNPay - Shipping address:', `${customerInfo.fullName} - ${customerInfo.phone} - ${customerInfo.address}`);
+        } catch (error) {
+          console.log('Không thể lấy userId từ token');
+        }
+      } else {
+        console.log('VNPay - No token found');
+      }
+      
+      createPayment({
+        amount: totalPrice,
+        orderId,
+        orderData: {
+          user_id: userId,
+          customer_name: customerInfo.fullName,
+          customer_phone: customerInfo.phone,
+          customer_email: customerInfo.email,
+          shipping_address: `${customerInfo.fullName} - ${customerInfo.phone} - ${customerInfo.address}`,
+          note: customerInfo.note,
+          shipping_fee: 0,
+          tax: 0,
+          details: cartItems.map(item => ({
+            book_id: item.book_id?._id || '',
+            variant_id: item.variant_id?._id || null,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        }
+      });
     } else {
       try {
         // Tạo đơn hàng COD
@@ -240,30 +281,30 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Thanh toán ZaloPay */}
+              {/* Thanh toán VNPAY */}
               <div 
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                  selectedPayment === "zalopay" 
+                  selectedPayment === "vnpay" 
                     ? "border-indigo-500 bg-indigo-50" 
                     : "border-gray-200 hover:border-gray-300"
                 }`}
-                onClick={() => setSelectedPayment("zalopay")}
+                onClick={() => setSelectedPayment("vnpay")}
               >
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
                     name="payment"
-                    value="zalopay"
-                    checked={selectedPayment === "zalopay"}
-                    onChange={() => setSelectedPayment("zalopay")}
+                    value="vnpay"
+                    checked={selectedPayment === "vnpay"}
+                    onChange={() => setSelectedPayment("vnpay")}
                     className="w-4 h-4 text-indigo-600"
                   />
-                  <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">Z</span>
+                  <div className="w-5 h-5 bg-red-600 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">V</span>
                   </div>
                   <div>
-                    <p className="font-medium">Thanh toán qua ZaloPay</p>
-                    <p className="text-sm text-gray-600">Thanh toán trực tuyến qua ví điện tử ZaloPay</p>
+                    <p className="font-medium">Thanh toán qua VNPAY</p>
+                    <p className="text-sm text-gray-600">Thanh toán trực tuyến qua cổng thanh toán VNPAY</p>
                   </div>
                 </div>
               </div>
@@ -318,10 +359,11 @@ const Checkout = () => {
             {/* Nút đặt hàng */}
             <button
               onClick={handlePlaceOrder}
-              className="w-full mt-6 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="w-full mt-6 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <CheckCircle className="w-4 h-4" />
-              {selectedPayment === "zalopay" ? "Thanh toán ZaloPay" : "Đặt hàng"}
+              {isLoading ? "Đang xử lý..." : selectedPayment === "vnpay" ? "Thanh toán VNPAY" : "Đặt hàng"}
             </button>
 
             {/* Thông tin bảo mật */}

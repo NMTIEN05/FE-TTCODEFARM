@@ -85,8 +85,10 @@ const Orders = () => {
         return;
       }
       
+      console.log('Calling getUserOrders with userId:', userId);
       const ordersData = await orderService.getUserOrders(userId);
       console.log('Fetched orders:', ordersData);
+      console.log('Orders data type:', typeof ordersData, Array.isArray(ordersData));
       
       // Xử lý cấu trúc response có pagination
       const actualOrdersData = Array.isArray(ordersData) ? ordersData : ordersData.data || [];

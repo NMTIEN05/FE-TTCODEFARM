@@ -1,8 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "../components/layouts/MainLayout";
-
 import Login from "../pages/auth/Login";
-
 import HomePage from "../pages/home/HomePage";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Admin from "../admin";
@@ -15,76 +13,35 @@ import ContactPage from "../pages/Contant/LienHe";
 import ProductByCategory from "../pages/home/components/ProductByCategory";
 import Wishlist from "../pages/Wishlist/Wishlist";
 import { SearchPage } from "../pages/Search/SearchPage";
-import Checkout from "../pages/Checkout/Checkout";
+import Checkout from "../pages/checkout/Checkout";
 import OrderSuccess from "../pages/OrderSuccess/OrderSuccess";
 import Orders from "../pages/Orders/Orders";
-// <- import bảo vệ route
+import VNPayReturnPage from "../pages/payment/VNPayReturn";
+import TestVNPay from "../pages/TestVNPay";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
     children: [
-      {
-        path: "/",
-        element: <HomePage />,
-        index: true,
-      },
-      {
-        path: "/detail/:id",
-        element: <DetelProduct />,
-      },
-      {
-        path: "/cart",
-        element: <Cart />,
-      },
-      {
-        path: "/allproduct",
-        element: <Allproduct />,
-      },
-      {
-        path: "/contant",
-        element: <ContactPage />,
-      },
-      {
-        path: "/category/:categoryId",
-        element: <ProductByCategory />,
-      },
-      {
-        path: "/wishlist",
-        element: <Wishlist />,
-      },
-      {
-        path: "/search",
-        element: <SearchPage />,
-      },
-      {
-        path: "/checkout",
-        element: <Checkout />,
-      },
-      {
-        path: "/order-success",
-        element: <OrderSuccess />,
-      },
-      {
-        path: "/orders",
-        element: <Orders />,
-      },
+      { index: true, element: <HomePage /> },
+      { path: "detail/:id", element: <DetelProduct /> },
+      { path: "cart", element: <Cart /> },
+      { path: "allproduct", element: <Allproduct /> },
+      { path: "contant", element: <ContactPage /> },
+      { path: "category/:categoryId", element: <ProductByCategory /> },
+      { path: "wishlist", element: <Wishlist /> },
+      { path: "search", element: <SearchPage /> },
+      { path: "checkout", element: <Checkout /> },
+      { path: "order-success", element: <OrderSuccess /> },
+      { path: "orders", element: <Orders /> },
+      { path: "payment/vnpay-return", element: <VNPayReturnPage /> },
     ],
   },
-  {
-    path: "/auth/register",
-    element: <Register />,
-  },
-  {
-    path: "/auth/login",
-    element: <Login />,
-  },
-  {
-    path: "/auth/verify-otp",
-    element: <EmailOTPVerification />,
-  },
-
+  { path: "/test-vnpay", element: <TestVNPay /> },
+  { path: "/auth/register", element: <Register /> },
+  { path: "/auth/login", element: <Login /> },
+  { path: "/auth/verify-otp", element: <EmailOTPVerification /> },
   {
     path: "/admin",
     element: (

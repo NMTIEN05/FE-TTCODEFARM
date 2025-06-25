@@ -6,11 +6,13 @@ import { Ibook } from '../../../types/Book';
 import axios from 'axios';
 import WishlistButton from '../../../components/wishlist/WishlistButton';
 import { CartButton } from '../../../components/cart';
+import { useFlashSale } from '../../../hooks/useFlashSale';
 
 type Props = {}
 
 const Product = (props: Props) => {
   const [book, setBook] = useState<Ibook[]>([]);
+  const { getProductDiscount, isProductOnSale, getSalePrice } = useFlashSale();
 
 useEffect(() => {
   (async () => {
@@ -43,9 +45,11 @@ useEffect(() => {
     <Link to={`/detail/${item._id}`} key={item._id}>
       <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col">
         {/* Discount Badge */}
-        <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-          -12%
-        </div>
+        {isProductOnSale(item._id) && (
+          <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+            -{getProductDiscount(item._id)}%
+          </div>
+        )}
 
         {/* Favorite Button */}
         <WishlistButton bookId={item._id} />
@@ -67,12 +71,20 @@ useEffect(() => {
 
           {/* Price - Luôn ở dưới cùng */}
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-xl font-bold text-blue-600">
-              {item.price ? item.price.toLocaleString('vi-VN') : '0'}₫
-            </span>
-            <span className="text-sm text-gray-400 line-through">
-              {item.price ? (item.price * 1.12).toLocaleString('vi-VN') : '0'}₫
-            </span>
+            {isProductOnSale(item._id) ? (
+              <>
+                <span className="text-xl font-bold text-blue-600">
+                  {getSalePrice(item.price, item._id).toLocaleString('vi-VN')}₫
+                </span>
+                <span className="text-sm text-gray-400 line-through">
+                  {item.price.toLocaleString('vi-VN')}₫
+                </span>
+              </>
+            ) : (
+              <span className="text-xl font-bold text-blue-600">
+                {item.price ? item.price.toLocaleString('vi-VN') : '0'}₫
+              </span>
+            )}
           </div>
 
           {/* Rating */}

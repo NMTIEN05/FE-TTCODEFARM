@@ -61,7 +61,7 @@ const Header = (props: Props) => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  BookStore
+                  SBook
                 </h1>
                 <p className="text-xs text-gray-500 font-medium">Tri thức là sức mạnh</p>
               </div>

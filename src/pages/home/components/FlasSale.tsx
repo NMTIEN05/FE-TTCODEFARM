@@ -134,13 +134,13 @@ const FlasSale = (props: Props) => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {flashSaleItems.map((item, index) => {
             const book = item.productId
             const salePrice = book.price * (1 - item.discountPercent / 100)
             
             return (
-              <div key={item._id} className="group relative bg-white rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-2">
+              <div key={item._id} className="group relative bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
                 {/* Sale Badge */}
                 <div className="absolute top-4 left-4 z-20">
                   <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-bounce">
@@ -148,17 +148,10 @@ const FlasSale = (props: Props) => {
                   </div>
                 </div>
 
-                {/* Wishlist */}
-                <div className="absolute top-4 right-4 z-20" onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
-                  <SimpleWishlistButton
-                    bookId={book._id}
-                    className="p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white"
-                  />
-                </div>
 
                 <Link to={`/detail/${book._id}`}>
                   {/* Image */}
-                  <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 aspect-[4/5]">
+                  <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 aspect-[3/4]">
                     <img
                       src={book.cover_image}
                       alt={book.title}
@@ -168,40 +161,40 @@ const FlasSale = (props: Props) => {
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
-                    <h3 className="font-bold text-gray-900 mb-3 line-clamp-2 text-lg leading-tight">
+                  <div className="p-3">
+                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-sm leading-tight">
                       {book.title}
                     </h3>
 
                     {/* Rating */}
-                    <div className="flex items-center gap-1 mb-4">
+                    <div className="flex items-center gap-1 mb-2">
                       <div className="flex">
                         {Array(5).fill(0).map((_, idx) => (
-                          <Star key={idx} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <Star key={idx} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                         ))}
                       </div>
                       <span className="text-sm text-gray-500 ml-1">(4.8)</span>
                     </div>
 
                     {/* Price */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="text-2xl font-bold text-red-600">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-base font-bold text-red-600">
                         {salePrice.toLocaleString('vi-VN')}đ
                       </span>
-                      <span className="text-lg text-gray-400 line-through">
+                      <span className="text-xs text-gray-400 line-through">
                         {book.price.toLocaleString('vi-VN')}đ
                       </span>
                     </div>
 
                     {/* Savings */}
-                    <div className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-sm font-medium mb-4 inline-block">
+                    <div className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full text-xs font-medium mb-2 inline-block">
                       Tiết kiệm {(book.price - salePrice).toLocaleString('vi-VN')}đ
                     </div>
                   </div>
                 </Link>
 
                 {/* Add to Cart */}
-                <div className="px-6 pb-6" onClick={(e) => e.preventDefault()}>
+                <div className="px-3 pb-3" onClick={(e) => e.preventDefault()}>
                   <CartButton 
                     bookId={book._id} 
                     size="md" 
@@ -211,18 +204,6 @@ const FlasSale = (props: Props) => {
               </div>
             )
           })}
-        </div>
-
-        {/* View All Button */}
-        <div className="text-center mt-12">
-          <Link
-            to="/flashsale"
-            className="group inline-flex items-center gap-2 bg-white text-red-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl"
-          >
-            <Zap className="w-5 h-5" />
-            <span>Xem tất cả Flash Sale</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
         </div>
       </div>
     </section>

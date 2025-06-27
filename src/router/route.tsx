@@ -18,6 +18,7 @@ import OrderSuccess from "../pages/OrderSuccess/OrderSuccess";
 import Orders from "../pages/Orders/Orders";
 import VNPayReturnPage from "../pages/payment/VNPayReturn";
 import TestVNPay from "../pages/TestVNPay";
+import BlogPage from "../pages/Blog/BlogPage";
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: "category/:categoryId", element: <ProductByCategory /> },
       { path: "wishlist", element: <Wishlist /> },
       { path: "search", element: <SearchPage /> },
+      { path: "blog", element: <BlogPage /> },
       { path: "checkout", element: <Checkout /> },
       { path: "order-success", element: <OrderSuccess /> },
       { path: "orders", element: <Orders /> },

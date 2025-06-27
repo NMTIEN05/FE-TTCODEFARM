@@ -149,6 +149,12 @@ const Header = (props: Props) => {
                 </a>
               </li>
               <li>
+                <a href="/blog" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition-colors py-2 px-3 rounded-lg hover:bg-blue-50">
+                  <BookOpen className="w-4 h-4" />
+                  Bài viết
+                </a>
+              </li>
+              <li>
                 <a href="/orders" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition-colors py-2 px-3 rounded-lg hover:bg-blue-50">
                   <ShoppingCart className="w-4 h-4" />
                   Đơn hàng
@@ -185,6 +191,12 @@ const Header = (props: Props) => {
                   <a href="/allproduct" className="flex items-center gap-3 text-gray-700 hover:text-blue-600 font-medium py-3 px-4 rounded-lg hover:bg-blue-50 transition-colors">
                     <Book className="w-5 h-5" />
                     Tất cả sách
+                  </a>
+                </li>
+                <li>
+                  <a href="/blog" className="flex items-center gap-3 text-gray-700 hover:text-blue-600 font-medium py-3 px-4 rounded-lg hover:bg-blue-50 transition-colors">
+                    <BookOpen className="w-5 h-5" />
+                    Bài viết
                   </a>
                 </li>
                 <li>

@@ -164,7 +164,9 @@ const Header = (props: Props) => {
 
           {/* Search Bar - Mobile */}
           <div className="md:hidden py-3 border-t border-gray-100">
-            <SearchBar />
+            <div className="relative">
+              <SearchBar />
+            </div>
           </div>
         </div>
 

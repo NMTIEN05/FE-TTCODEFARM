@@ -120,7 +120,7 @@ const Nav = () => {
                 
                 <div className="flex flex-wrap gap-3">
                   <Link
-                    to="/category/bestseller"
+                    to="#"
                     className="group flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300"
                   >
                     <TrendingUp className="w-4 h-4" />
@@ -128,7 +128,7 @@ const Nav = () => {
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <Link
-                    to="/category/new"
+                    to="#"
                     className="group flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 px-4 py-2 rounded-lg transition-all duration-300"
                   >
                     <Sparkles className="w-4 h-4" />

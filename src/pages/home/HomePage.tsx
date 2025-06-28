@@ -57,7 +57,7 @@ const HomePage = (props: Props) => {
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button 
-                  onClick={() => navigate('/category/bestseller')}
+                  onClick={() => navigate('#')}
                   className="flex items-center justify-center gap-2 border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:border-blue-500 hover:text-blue-600 transition-all duration-300"
                 >
                   <TrendingUp className="w-5 h-5" />

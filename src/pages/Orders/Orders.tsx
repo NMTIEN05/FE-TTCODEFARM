@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { 
   Package, 
   Clock, 
@@ -7,7 +7,9 @@ import {
   Truck, 
   Eye,
   X,
-  AlertTriangle
+  RefreshCw,
+  ShoppingBag,
+  RotateCcw
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { orderService } from "../../services/orderService";
@@ -32,7 +34,7 @@ interface Order {
   };
   items: OrderItem[];
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'confirmed' | 'ready_to_ship' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
   paymentMethod: string;
   createdAt: string;
 }
@@ -41,14 +43,21 @@ const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [returnReason, setReturnReason] = useState('');
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [processingReturn, setProcessingReturn] = useState(false);
+  const [returnOrderId, setReturnOrderId] = useState<string>('');
   const navigate = useNavigate();
 
   const statusConfig = {
-    pending: { label: 'Chờ xác nhận', color: 'text-yellow-600 bg-yellow-100', icon: Clock },
+    pending: { label: 'Chờ xử lý', color: 'text-yellow-600 bg-yellow-100', icon: Clock },
+    processing: { label: 'Đang xử lý', color: 'text-amber-600 bg-amber-100', icon: RefreshCw },
     confirmed: { label: 'Đã xác nhận', color: 'text-blue-600 bg-blue-100', icon: CheckCircle },
+    ready_to_ship: { label: 'Sẵn sàng giao', color: 'text-cyan-600 bg-cyan-100', icon: ShoppingBag },
     shipped: { label: 'Đang giao hàng', color: 'text-purple-600 bg-purple-100', icon: Truck },
     delivered: { label: 'Đã giao hàng', color: 'text-green-600 bg-green-100', icon: CheckCircle },
-    cancelled: { label: 'Đã hủy', color: 'text-red-600 bg-red-100', icon: XCircle }
+    cancelled: { label: 'Đã hủy', color: 'text-red-600 bg-red-100', icon: XCircle },
+    returned: { label: 'Đã hoàn trả', color: 'text-orange-600 bg-orange-100', icon: RotateCcw }
   };
 
   useEffect(() => {
@@ -119,7 +128,7 @@ const Orders = () => {
             price: detail.price || 0
           })),
           totalAmount: order.total_amount || 0,
-          status: order.status as 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled',
+          status: order.status as 'pending' | 'processing' | 'confirmed' | 'ready_to_ship' | 'shipped' | 'delivered' | 'cancelled' | 'returned',
           paymentMethod: order.payment_method || 'COD',
           createdAt: order.order_date || order.createdAt || new Date().toISOString()
         };
@@ -146,6 +155,34 @@ const Orders = () => {
     } catch (error: any) {
       console.error('Lỗi khi hủy đơn hàng:', error);
       alert(error.response?.data?.message || 'Có lỗi khi hủy đơn hàng');
+    }
+  };
+  
+  const openReturnModal = (orderId: string) => {
+    setReturnOrderId(orderId);
+    setReturnReason('');
+    setShowReturnModal(true);
+  };
+
+  const handleReturnRequest = async () => {
+    if (!returnReason.trim()) {
+      alert('Vui lòng nhập lý do hoàn trả');
+      return;
+    }
+    
+    setProcessingReturn(true);
+    
+    try {
+      await orderService.createReturnRequest(returnOrderId, returnReason);
+      setShowReturnModal(false);
+      alert('Yêu cầu hoàn trả đơn hàng đã được gửi thành công. Chúng tôi sẽ xem xét và phản hồi sớm.');
+      // Cập nhật lại danh sách đơn hàng
+      fetchOrders();
+    } catch (error: any) {
+      console.error('Lỗi khi gửi yêu cầu hoàn trả:', error);
+      alert(error.response?.data?.message || 'Có lỗi khi gửi yêu cầu hoàn trả');
+    } finally {
+      setProcessingReturn(false);
     }
   };
 
@@ -181,7 +218,7 @@ const Orders = () => {
         <div className="space-y-4">
           {orders.map((order) => {
             const StatusIcon = statusConfig[order.status].icon;
-            const canCancel = order.status === 'pending';
+            const canCancel = ['pending', 'processing', 'confirmed'].includes(order.status);
             
             return (
               <div key={order._id} className="bg-white border rounded-lg p-6">

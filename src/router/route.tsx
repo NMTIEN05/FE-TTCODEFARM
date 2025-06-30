@@ -19,6 +19,7 @@ import Orders from "../pages/Orders/Orders";
 import VNPayReturnPage from "../pages/payment/VNPayReturn";
 import TestVNPay from "../pages/TestVNPay";
 import BlogPage from "../pages/Blog/BlogPage";
+import ProfilePage from "../pages/Profile/Profile";
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { path: "checkout", element: <Checkout /> },
       { path: "order-success", element: <OrderSuccess /> },
       { path: "orders", element: <Orders /> },
+      { path: "profile", element: <ProfilePage /> },
       { path: "payment/vnpay-return", element: <VNPayReturnPage /> },
     ],
   },

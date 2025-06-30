@@ -1,14 +1,16 @@
 import React from 'react';
-import { Clock, CheckCircle, Truck, Package } from 'lucide-react';
+import { Clock, CheckCircle, Truck, Package, RefreshCw, AlertTriangle, ShoppingBag } from 'lucide-react';
 
 interface OrderTrackingProps {
-  currentStatus: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  currentStatus: 'pending' | 'processing' | 'confirmed' | 'ready_to_ship' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
 }
 
 const OrderTracking: React.FC<OrderTrackingProps> = ({ currentStatus }) => {
   const steps = [
     { key: 'pending', label: 'Đặt hàng', icon: Clock },
+    { key: 'processing', label: 'Xử lý', icon: RefreshCw },
     { key: 'confirmed', label: 'Xác nhận', icon: CheckCircle },
+    { key: 'ready_to_ship', label: 'Sẵn sàng giao', icon: ShoppingBag },
     { key: 'shipped', label: 'Đang giao', icon: Truck },
     { key: 'delivered', label: 'Hoàn thành', icon: Package }
   ];
@@ -23,10 +25,23 @@ const OrderTracking: React.FC<OrderTrackingProps> = ({ currentStatus }) => {
     return 'pending';
   };
 
-  if (currentStatus === 'cancelled') {
+  if (currentStatus === 'cancelled' || currentStatus === 'returned') {
     return (
-      <div className="flex items-center justify-center p-4 bg-red-50 rounded-lg">
-        <span className="text-red-600 font-medium">Đơn hàng đã bị hủy</span>
+      <div className="flex items-center justify-center p-4 rounded-lg" style={{ 
+        backgroundColor: currentStatus === 'cancelled' ? '#FEF2F2' : '#FFF7ED',
+        color: currentStatus === 'cancelled' ? '#DC2626' : '#EA580C'
+      }}>
+        {currentStatus === 'cancelled' ? (
+          <span className="font-medium flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" />
+            Đơn hàng đã bị hủy
+          </span>
+        ) : (
+          <span className="font-medium flex items-center gap-2">
+            <RefreshCw className="w-5 h-5" />
+            Đơn hàng đã hoàn trả
+          </span>
+        )}
       </div>
     );
   }

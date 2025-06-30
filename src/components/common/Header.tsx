@@ -114,13 +114,22 @@ const Header = (props: Props) => {
                   <span className="hidden sm:inline">Đăng nhập</span>
                 </button>
               ) : (
-                <button 
-                  onClick={logout} 
-                  className="p-3 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
-                  title="Đăng xuất"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => navigate('/profile')} 
+                    className="p-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
+                    title="Thông tin cá nhân"
+                  >
+                    <User className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={logout} 
+                    className="p-3 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
+                    title="Đăng xuất"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
               )}
 
               {/* Mobile Menu Button */}
@@ -165,6 +174,14 @@ const Header = (props: Props) => {
                   Liên hệ
                 </a>
               </li>
+              {isLoggedIn && (
+                <li>
+                  <a href="/profile" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition-colors py-2 px-3 rounded-lg hover:bg-blue-50">
+                    <User className="w-4 h-4" />
+                    Tài khoản
+                  </a>
+                </li>
+              )}
             </ul>
           </nav>
 
@@ -210,6 +227,14 @@ const Header = (props: Props) => {
                     Liên hệ
                   </a>
                 </li>
+                {isLoggedIn && (
+                  <li>
+                    <a href="/profile" className="flex items-center gap-3 text-gray-700 hover:text-blue-600 font-medium py-3 px-4 rounded-lg hover:bg-blue-50 transition-colors">
+                      <User className="w-5 h-5" />
+                      Tài khoản
+                    </a>
+                  </li>
+                )}
               </ul>
             </nav>
           </div>

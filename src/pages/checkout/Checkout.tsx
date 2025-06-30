@@ -9,11 +9,15 @@ import {
   Mail,
   ShoppingBag,
   CheckCircle,
+  Tag,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../providers/CartProvider";
 import { orderService } from "../../services/orderService";
 import { useVNPay } from "../../hooks/useVNPay";
+import { couponService } from "../../services/coupon.service";
+import { toast } from "react-toastify";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -27,6 +31,17 @@ const Checkout = () => {
     address: "",
     note: "",
   });
+  
+  // State cho mã giảm giá
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    couponId: string;
+    code: string;
+    discountPercent: number;
+    discountAmount: number;
+    finalAmount: number;
+  } | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -35,11 +50,63 @@ const Checkout = () => {
       [name]: value
     }));
   };
+  
+  // Xử lý áp dụng mã giảm giá
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Vui lòng nhập mã giảm giá");
+      return;
+    }
+    
+    setCouponLoading(true);
+    try {
+      const response = await couponService.validateCoupon(couponCode, totalPrice);
+      console.log('Coupon response:', JSON.stringify(response, null, 2));
+      
+      // Backend trả về cấu trúc { message, data }
+      if (response && response.data) {
+        // Tính toán trực tiếp từ dữ liệu cơ bản
+        const code = response.data.code || couponCode;
+        const discountPercent = response.data.discountPercent || 0;
+        
+        // Tính toán lại số tiền giảm và số tiền cuối cùng
+        const discountAmount = Math.floor(totalPrice * (discountPercent / 100));
+        const finalAmount = totalPrice - discountAmount;
+        
+        const couponData = {
+          couponId: response.data.couponId || '',
+          code: code,
+          discountPercent: discountPercent,
+          discountAmount: discountAmount,
+          finalAmount: finalAmount
+        };
+        
+        console.log('Processed coupon data:', couponData);
+        setAppliedCoupon(couponData);
+        toast.success(response.message || "Mã giảm giá đã được áp dụng");
+      } else {
+        toast.error("Có lỗi khi áp dụng mã giảm giá");
+        setAppliedCoupon(null);
+      }
+    } catch (error: any) {
+      console.error('Coupon error:', error);
+      toast.error(error.response?.data?.message || "Mã giảm giá không hợp lệ");
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+  
+  // Xử lý xóa mã giảm giá
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+  };
 
   const handlePlaceOrder = async () => {
     // Kiểm tra thông tin bắt buộc
     if (!customerInfo.fullName || !customerInfo.phone || !customerInfo.address) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc");
+      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
       return;
     }
 
@@ -65,7 +132,7 @@ const Checkout = () => {
       }
       
       createPayment({
-        amount: totalPrice,
+        amount: appliedCoupon ? appliedCoupon.finalAmount : totalPrice,
         orderId,
         orderData: {
           user_id: userId,
@@ -76,6 +143,8 @@ const Checkout = () => {
           note: customerInfo.note,
           shipping_fee: 0,
           tax: 0,
+          coupon_id: appliedCoupon?.couponId,
+          discount_amount: appliedCoupon?.discountAmount || 0,
           details: cartItems.map(item => ({
             book_id: item.book_id?._id || '',
             variant_id: item.variant_id?._id || null,
@@ -109,12 +178,14 @@ const Checkout = () => {
         const orderData = {
           user_id: userId,
           cart_id: undefined,
-          total_amount: totalPrice,
+          total_amount: appliedCoupon ? appliedCoupon.finalAmount : totalPrice,
           shipping_address: `${customerInfo.fullName} - ${customerInfo.phone} - ${customerInfo.address}`,
           payment_method: 'COD',
           shipping_fee: 0,
           tax: 0,
           status: 'pending',
+          coupon_id: appliedCoupon?.couponId,
+          discount_amount: appliedCoupon?.discountAmount || 0,
           details: cartItems.map(item => ({
             book_id: item.book_id?._id || '',
             variant_id: item.variant_id?._id || null,
@@ -340,6 +411,46 @@ const Checkout = () => {
               ))}
             </div>
 
+            {/* Mã giảm giá */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Tag className="w-4 h-4 text-indigo-600" />
+                <span className="text-sm font-medium">Mã giảm giá</span>
+              </div>
+              
+              {!appliedCoupon ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    placeholder="Nhập mã giảm giá"
+                    className="flex-1 p-2 border rounded-md text-sm"
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading}
+                    className="bg-indigo-600 text-white px-3 py-2 rounded-md text-sm hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {couponLoading ? "...Đang kiểm tra" : "Áp dụng"}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-2 bg-indigo-50 border border-indigo-200 rounded-md">
+                  <div>
+                    <span className="text-sm font-medium text-indigo-700">{appliedCoupon.code}</span>
+                    <span className="text-xs text-indigo-600 ml-2">(-{appliedCoupon.discountPercent || 0}%)</span>
+                  </div>
+                  <button
+                    onClick={handleRemoveCoupon}
+                    className="text-gray-500 hover:text-red-500"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+            
             {/* Tổng kết */}
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
@@ -350,9 +461,19 @@ const Checkout = () => {
                 <span>Phí vận chuyển:</span>
                 <span className="text-green-600">Miễn phí</span>
               </div>
+              
+              {appliedCoupon && appliedCoupon.discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-indigo-600">
+                  <span>Giảm giá ({appliedCoupon.discountPercent}%):</span>
+                  <span>-{appliedCoupon.discountAmount.toLocaleString()}đ</span>
+                </div>
+              )}
+              
               <div className="flex justify-between text-lg font-semibold border-t pt-2">
                 <span>Tổng cộng:</span>
-                <span className="text-red-600">{totalPrice.toLocaleString()}đ</span>
+                <span className="text-red-600">
+                  {(appliedCoupon && appliedCoupon.finalAmount ? appliedCoupon.finalAmount : totalPrice).toLocaleString()}đ
+                </span>
               </div>
             </div>
 

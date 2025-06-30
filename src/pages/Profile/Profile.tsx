@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Save, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { useChangePassword } from '../../hooks/auth/useChangePassword';
 import axios from 'axios';
 
 interface UserProfile {
@@ -15,10 +16,26 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  
+  // Hook đổi mật khẩu
+  const { changePassword, loading: passwordLoading, error: passwordError, success: passwordSuccess, setError: setPasswordError } = useChangePassword(profile?._id || '');
   const [formData, setFormData] = useState({
     fullname: '',
     phone: '',
     address: '',
+  });
+  
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
   });
 
   useEffect(() => {
@@ -90,6 +107,21 @@ const ProfilePage: React.FC = () => {
       [name]: value
     }));
   };
+  
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,32 +173,71 @@ const ProfilePage: React.FC = () => {
     );
   }
 
+  // Xử lý đổi mật khẩu
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Kiểm tra mật khẩu mới và xác nhận mật khẩu
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('Mật khẩu mới và xác nhận mật khẩu không khớp');
+      return;
+    }
+    
+    const success = await changePassword(passwordData);
+    if (success) {
+      // Reset form
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-8 flex items-center gap-2">
         <User className="w-6 h-6" />
         Thông tin cá nhân
       </h1>
+      
+      {/* Tab navigation */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          className={`py-2 px-4 font-medium ${activeTab === 'profile' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-indigo-600'}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          Thông tin cá nhân
+        </button>
+        <button
+          className={`py-2 px-4 font-medium ${activeTab === 'password' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-indigo-600'}`}
+          onClick={() => setActiveTab('password')}
+        >
+          Đổi mật khẩu
+        </button>
+      </div>
 
-      {error && (
-        <div className="bg-red-50 p-4 rounded-lg mb-6">
-          <p className="text-red-600 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
-            {error}
-          </p>
-        </div>
-      )}
+      {activeTab === 'profile' && (
+        <>
+          {error && (
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <p className="text-red-600 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                {error}
+              </p>
+            </div>
+          )}
 
-      {success && (
-        <div className="bg-green-50 p-4 rounded-lg mb-6">
-          <p className="text-green-600 flex items-center gap-2">
-            <Save className="w-5 h-5" />
-            {success}
-          </p>
-        </div>
-      )}
+          {success && (
+            <div className="bg-green-50 p-4 rounded-lg mb-6">
+              <p className="text-green-600 flex items-center gap-2">
+                <Save className="w-5 h-5" />
+                {success}
+              </p>
+            </div>
+          )}
 
-      <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -247,6 +318,136 @@ const ProfilePage: React.FC = () => {
           </div>
         </form>
       </div>
+      </>)}
+      
+      {activeTab === 'password' && (
+        <>
+          {passwordError && (
+            <div className="bg-red-50 p-4 rounded-lg mb-6">
+              <p className="text-red-600 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                {passwordError}
+              </p>
+            </div>
+          )}
+
+          {passwordSuccess && (
+            <div className="bg-green-50 p-4 rounded-lg mb-6">
+              <p className="text-green-600 flex items-center gap-2">
+                <Save className="w-5 h-5" />
+                {passwordSuccess}
+              </p>
+            </div>
+          )}
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <form onSubmit={handleChangePassword} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mật khẩu hiện tại
+                </label>
+                <div className="flex items-center border border-gray-300 rounded-md overflow-hidden relative">
+                  <div className="bg-gray-100 p-2">
+                    <Lock className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <input
+                    type={showPassword.current ? "text" : "password"}
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    className="flex-1 px-3 py-2 focus:outline-none"
+                    placeholder="Nhập mật khẩu hiện tại"
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-2 text-gray-500"
+                    onClick={() => togglePasswordVisibility('current')}
+                  >
+                    {showPassword.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mật khẩu mới
+                </label>
+                <div className="flex items-center border border-gray-300 rounded-md overflow-hidden relative">
+                  <div className="bg-gray-100 p-2">
+                    <Lock className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <input
+                    type={showPassword.new ? "text" : "password"}
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className="flex-1 px-3 py-2 focus:outline-none"
+                    placeholder="Nhập mật khẩu mới"
+                    required
+                    minLength={6}
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-2 text-gray-500"
+                    onClick={() => togglePasswordVisibility('new')}
+                  >
+                    {showPassword.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Mật khẩu phải có ít nhất 6 ký tự</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Xác nhận mật khẩu mới
+                </label>
+                <div className="flex items-center border border-gray-300 rounded-md overflow-hidden relative">
+                  <div className="bg-gray-100 p-2">
+                    <Lock className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <input
+                    type={showPassword.confirm ? "text" : "password"}
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className="flex-1 px-3 py-2 focus:outline-none"
+                    placeholder="Xác nhận mật khẩu mới"
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-2 text-gray-500"
+                    onClick={() => togglePasswordVisibility('confirm')}
+                  >
+                    {showPassword.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={passwordLoading}
+                  className="w-full bg-indigo-600 text-white py-3 px-6 rounded-md font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:bg-indigo-400"
+                >
+                  {passwordLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Đổi mật khẩu
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
     </div>
   );
 };

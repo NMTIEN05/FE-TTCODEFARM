@@ -108,6 +108,16 @@ const Cart = () => {
                 <p className="text-sm text-gray-600">
                   Tác giả: {item.book_id?.author_id?.name || 'Chưa có thông tin'}
                 </p>
+                {item.variant_id && (
+                  <p className="text-sm text-blue-600 font-medium">
+                    Định dạng: {item.variant_id.format === 'hardcover' ? 'Bìa cứng' : 
+                              item.variant_id.format === 'paperback' ? 'Bìa mềm' : 'PDF'}
+                    {item.variant_id.format !== 'pdf' && item.variant_id.pages && 
+                      ` - ${item.variant_id.pages} trang`}
+                    {item.variant_id.format === 'pdf' && item.variant_id.file_size && 
+                      ` - ${item.variant_id.file_size}MB`}
+                  </p>
+                )}
                 <p className="text-sm text-gray-500">
                   Đơn giá: {item.price.toLocaleString()}đ
                 </p>

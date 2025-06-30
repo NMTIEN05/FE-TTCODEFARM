@@ -34,12 +34,12 @@ const Wishlist: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {wishlistItems.map((item) => (
+          {wishlistItems.filter(item => item.book_id && item.book_id._id).map((item) => (
             <div key={item._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img
-                  src={item.book_id.cover_image}
-                  alt={item.book_id.title}
+                  src={item.book_id?.cover_image || '/placeholder.jpg'}
+                  alt={item.book_id?.title || 'Book'}
                   className="w-full h-64 object-cover cursor-pointer"
                   onClick={() => navigate(`/detail/${item.book_id._id}`)}
                 />
@@ -54,13 +54,13 @@ const Wishlist: React.FC = () => {
                   className="font-semibold text-lg mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600"
                   onClick={() => navigate(`/detail/${item.book_id._id}`)}
                 >
-                  {item.book_id.title}
+                  {item.book_id?.title || 'Untitled'}
                 </h3>
                 <p className="text-gray-600 mb-2">
-                  Tác giả: {item.book_id.author_id?.name || 'Chưa có thông tin'}
+                  Tác giả: {item.book_id?.author_id?.name || 'Chưa có thông tin'}
                 </p>
                 <p className="text-red-600 font-bold text-xl mb-4">
-                  {item.book_id.price ? item.book_id.price.toLocaleString('vi-VN') : '0'}đ
+                  {item.book_id?.price ? item.book_id.price.toLocaleString('vi-VN') : '0'}đ
                 </p>
                 
                 <div className="flex gap-2">

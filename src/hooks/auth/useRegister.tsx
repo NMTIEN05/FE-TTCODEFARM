@@ -15,19 +15,19 @@ export const useRegisterForm = () => {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       const res = await axios.post('http://localhost:8888/auth/register', data);
-      toast.success('Đăng ký thành công!', {
+      toast.success(res.data.message || 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.', {
         position: 'top-right',
-        autoClose: 3000,
+        autoClose: 5000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
       });
 
-      // Đợi toast tắt mới chuyển hướng
+      // Chuyển đến trang nhập OTP
       setTimeout(() => {
-        navigate('/auth/login');
-      }, 3000);
+        navigate('/auth/verify-otp', { state: { email: data.email } });
+      }, 2000);
 
     } catch (error: any) {
       const message =

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { ToastContainer } from 'react-toastify';
 import { CartProvider } from './providers/CartProvider';
 import { WishlistProvider } from './providers/WishlistProvider';
+import ScrollToTop from './components/ScrollToTop';
 
 const App:React.FC = () => {
     

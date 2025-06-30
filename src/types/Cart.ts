@@ -1,9 +1,10 @@
-import { Ibook } from './Book';
+import { Ibook, IProductVariant } from './Book';
 
 export interface ICartItem {
   _id: string;
   cart_id: string;
   book_id: Ibook;
+  variant_id?: IProductVariant;
   quantity: number;
   price: number;
   added_at: string;

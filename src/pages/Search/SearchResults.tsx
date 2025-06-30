@@ -1,58 +1,72 @@
-import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Search, Grid, List, Star, Filter, ChevronDown } from 'lucide-react'
-import { Ibook } from '../../types/Book'
+import { useSearchParams, Link } from 'react-router-dom'
+import { Search, Grid, List, Star, Filter, SlidersHorizontal, X } from 'lucide-react'
 import axios from 'axios'
+import { Ibook } from '../../types/Book'
 import { SimpleWishlistButton } from '../../components/wishlist/SimpleWishlistButton'
 import { CartButton } from '../../components/cart'
 
-const Allproduct = () => {
+const SearchResults = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const query = searchParams.get('q') || ''
+  
   const [products, setProducts] = useState<Ibook[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Ibook[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('')
   const [priceRange, setPriceRange] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true)
-        const response = await axios.get('http://localhost:8888/api/books?limit=0')
-
-        if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
-          setProducts(response.data.data.data)
-          setFilteredProducts(response.data.data.data)
-        } else {
-          setProducts([])
-          setFilteredProducts([])
-        }
-      } catch (error) {
-        console.error('Lỗi khi gọi API sản phẩm:', error)
-        setProducts([])
-        setFilteredProducts([])
-      } finally {
-        setLoading(false)
-      }
+    if (query) {
+      searchProducts(query)
     }
-    fetchProducts()
-  }, [])
+  }, [query])
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term)
-    applyFilters(term, sortBy, priceRange)
+  const searchProducts = async (searchQuery: string) => {
+    setLoading(true)
+    console.log('Searching for:', searchQuery)
+    
+    try {
+      const response = await axios.get(`http://localhost:8888/api/books/search?q=${encodeURIComponent(searchQuery)}&limit=50`)
+      console.log('Search response:', response.data)
+      
+      if (response.data?.data?.data && Array.isArray(response.data.data.data) && response.data.data.data.length > 0) {
+        console.log('Found products:', response.data.data.data.length)
+        setProducts(response.data.data.data)
+        setFilteredProducts(response.data.data.data)
+        setLoading(false)
+        return
+      }
+    } catch (error) {
+      console.error('Search endpoint error:', error)
+    }
+    
+    try {
+      console.log('Trying fallback with books endpoint')
+      const fallbackResponse = await axios.get(`http://localhost:8888/api/books?search=${encodeURIComponent(searchQuery)}&limit=50`)
+      console.log('Fallback response:', fallbackResponse.data)
+      
+      if (fallbackResponse.data?.data?.data && Array.isArray(fallbackResponse.data.data.data)) {
+        console.log('Found products in fallback:', fallbackResponse.data.data.data.length)
+        setProducts(fallbackResponse.data.data.data)
+        setFilteredProducts(fallbackResponse.data.data.data)
+        setLoading(false)
+        return
+      }
+    } catch (fallbackError) {
+      console.error('Fallback error:', fallbackError)
+    }
+    
+    console.log('No results found, setting empty arrays')
+    setProducts([])
+    setFilteredProducts([])
+    setLoading(false)
   }
 
-  const applyFilters = (search: string, sort: string, price: string) => {
+  const applyFilters = (sort: string, price: string) => {
     let filtered = [...products]
-
-    // Search filter
-    if (search) {
-      filtered = filtered.filter(product =>
-        product.title.toLowerCase().includes(search.toLowerCase())
-      )
-    }
 
     // Price filter
     if (price) {
@@ -73,6 +87,10 @@ const Allproduct = () => {
       case 'name':
         filtered.sort((a, b) => a.title.localeCompare(b.title))
         break
+      case 'relevance':
+      default:
+        // Keep original order (most relevant first)
+        break
     }
 
     setFilteredProducts(filtered)
@@ -80,12 +98,18 @@ const Allproduct = () => {
 
   const handleSortChange = (value: string) => {
     setSortBy(value)
-    applyFilters(searchTerm, value, priceRange)
+    applyFilters(value, priceRange)
   }
 
   const handlePriceChange = (value: string) => {
     setPriceRange(value)
-    applyFilters(searchTerm, sortBy, value)
+    applyFilters(sortBy, value)
+  }
+
+  const clearFilters = () => {
+    setSortBy('')
+    setPriceRange('')
+    setFilteredProducts(products)
   }
 
   if (loading) {
@@ -93,7 +117,7 @@ const Allproduct = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải sản phẩm...</p>
+          <p className="text-gray-600">Đang tìm kiếm...</p>
         </div>
       </div>
     )
@@ -197,33 +221,38 @@ const Allproduct = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col gap-4">
+            {/* Search Info */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Tất cả sách</h1>
-              <p className="text-gray-600 mt-1">{filteredProducts.length} sản phẩm</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Kết quả tìm kiếm cho "{query}"
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {filteredProducts.length} sản phẩm được tìm thấy
+              </p>
             </div>
-            {/* Search & Controls */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm sách..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-80"
-                />
-              </div>
-              {/* Filters */}
-              <div className="flex gap-2">
+
+            {/* Controls */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              {/* Filter Toggle - Mobile */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                Bộ lọc
+              </button>
+
+              {/* Filters - Desktop */}
+              <div className={`flex flex-col sm:flex-row gap-4 ${showFilters ? 'block' : 'hidden lg:flex'}`}>
                 {/* Sort */}
                 <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Sắp xếp</option>
+                  <option value="">Sắp xếp theo</option>
+                  <option value="relevance">Liên quan nhất</option>
                   <option value="name">Tên A-Z</option>
                   <option value="price-asc">Giá thấp → cao</option>
                   <option value="price-desc">Giá cao → thấp</option>
@@ -242,21 +271,32 @@ const Allproduct = () => {
                   <option value="500000-999999999">Trên 500k</option>
                 </select>
 
-                {/* View Toggle */}
-                <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                {/* Clear Filters */}
+                {(sortBy || priceRange) && (
                   <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
+                    onClick={clearFilters}
+                    className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    <Grid className="w-4 h-4" />
+                    <X className="w-4 h-4" />
+                    Xóa bộ lọc
                   </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
-                  >
-                    <List className="w-4 h-4" />
-                  </button>
-                </div>
+                )}
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
@@ -264,15 +304,31 @@ const Allproduct = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Products */}
+        {/* Results */}
         <div>
           {filteredProducts.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy sản phẩm</h3>
-              <p className="text-gray-600">Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Không tìm thấy sản phẩm nào
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Thử tìm kiếm với từ khóa khác hoặc thay đổi bộ lọc
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <span className="text-sm text-gray-500">Gợi ý:</span>
+                {['Sách kinh tế', 'Tiểu thuyết', 'Sách thiếu nhi'].map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => setSearchParams({ q: suggestion })}
+                    className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <div className={viewMode === 'grid'
@@ -292,4 +348,4 @@ const Allproduct = () => {
   )
 }
 
-export default Allproduct
+export default SearchResults

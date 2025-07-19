@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { verifyVNPayReturnAPI } from '../../services/vnpay.service'
+import { useCart } from '../../providers/CartProvider'
 import '../../css/vnpay.css'
 
 const VNPayReturnPage = () => {
@@ -8,6 +9,7 @@ const VNPayReturnPage = () => {
   const navigate = useNavigate()
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const { clearCart } = useCart()
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -19,6 +21,16 @@ const VNPayReturnPage = () => {
         // Gọi API backend để verify payment
         const data = await verifyVNPayReturnAPI(searchParams)
         console.log('Backend verification result:', data)
+        
+        // Nếu thanh toán thành công, xóa giỏ hàng
+        if (data.success) {
+          try {
+            await clearCart()
+            console.log('Cart cleared after successful VNPay payment')
+          } catch (error) {
+            console.error('Error clearing cart:', error)
+          }
+        }
         
         setResult({
           success: data.success,

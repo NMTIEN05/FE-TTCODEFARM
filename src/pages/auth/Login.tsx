@@ -71,6 +71,12 @@ const Login = () => {
               {errors.password && <p className="text-red-600 mt-1 text-sm">{errors.password.message}</p>}
             </div>
 
+            <div className="flex justify-end mb-2">
+              <Link to="/auth/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-800">
+                Quên mật khẩu?
+              </Link>
+            </div>
+            
             <button
               type="submit"
               className="w-full py-4 rounded-lg bg-gradient-to-tr from-[#5e72e4] to-[#825ee4] text-white font-semibold shadow hover:shadow-lg hover:-translate-y-0.5 transition-transform duration-300"
